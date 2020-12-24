@@ -1,0 +1,25 @@
+common-quadrator-header (0.2.0) xenial; urgency=medium
+  
+  [ Ajout ]
+  * Mise en commun des constante liées au protocole tcp client serveur 
+
+ -- Marius LOPEZ <marius.lopez@damavan-imaging.com>  Wed, 13 Nov 2019 17:37:37 +0100
+
+common-quadrator-header (0.1.2) xenial; urgency=medium
+
+  * Ajout initialisation à zéro des structure d'événements. fonctionne pour
+    C++11, pas testé sur C11.
+
+ -- Marius LOPEZ <marius.lopez@damavan-imaging.com>  Thu, 19 Sep 2019 16:35:46 +0200
+
+common-quadrator-header (0.1.1) xenial; urgency=medium
+
+  * Suppression d'un fichier c dont les fonctions sont maintenant en inline.
+
+ -- Marius LOPEZ <marius.lopez@damavan-imaging.com>  Fri, 18 Jan 2019 16:47:35 +0100
+
+common-quadrator-header (0.1.0) xenial; urgency=medium
+
+  * Initial release.
+
+ -- Marius LOPEZ <marius.lopez@damavan-imaging.com>  Fri, 18 Jan 2019 16:39:07 +0100

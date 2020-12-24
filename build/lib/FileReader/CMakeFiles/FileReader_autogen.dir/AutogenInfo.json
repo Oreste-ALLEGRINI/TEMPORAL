@@ -1,0 +1,127 @@
+{
+	"BUILD_DIR" : "/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/lib/FileReader/FileReader_autogen",
+	"CMAKE_BINARY_DIR" : "/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build",
+	"CMAKE_CURRENT_BINARY_DIR" : "/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/lib/FileReader",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/lib/FileReader",
+	"CMAKE_EXECUTABLE" : "/usr/local/Cellar/cmake/3.18.4/bin/cmake",
+	"CMAKE_LIST_FILES" : 
+	[
+		"/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/lib/FileReader/CMakeLists.txt",
+		"/usr/local/opt/qt/lib/cmake/Qt5/Qt5ConfigVersion.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5/Qt5Config.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5/Qt5ModuleLocation.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Core/Qt5CoreConfigVersion.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Core/Qt5CoreConfig.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Core/Qt5CoreConfigExtras.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Core/Qt5CoreMacros.cmake",
+		"/usr/local/Cellar/cmake/3.18.4/share/cmake/Modules/CMakeParseArguments.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5GuiConfigVersion.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5GuiConfig.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QCocoaIntegrationPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QGifPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QICNSPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QICOPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QJpegPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QMacHeifPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QMacJp2Plugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QMinimalIntegrationPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QOffscreenIntegrationPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QPdfPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QSvgIconPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QSvgPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QTgaPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QTiffPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QTuioTouchPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QVirtualKeyboardPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QWbmpPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QWebGLIntegrationPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QWebpPlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5Gui_QXdgDesktopPortalThemePlugin.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Test/Qt5TestConfigVersion.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Test/Qt5TestConfig.cmake",
+		"/usr/local/opt/qt/lib/cmake/Qt5Test/Qt5TestConfigExtras.cmake"
+	],
+	"CMAKE_SOURCE_DIR" : "/Users/allegrini/Documents/11.CameraTemporal/TestFileReader",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/lib/FileReader/filereader.h",
+			"MU",
+			"EWIEGA46WW/moc_filereader.cpp"
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/lib/FileReader/FileReader_autogen/include",
+	"MOC_COMPILATION_FILE" : "/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/lib/FileReader/FileReader_autogen/mocs_compilation.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"CORPORATION_NAME=\"Damavan-imaging\"",
+		"NO_YAML",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"SOFTWARE_NAME=\"FileReader\"",
+		"VERSION=\"0.0.1\""
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"/Users/allegrini/Applications/root-10.14.06/include",
+		"/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/lib/FileReader",
+		"/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/lib/FileReader/lib/CommonQuadratorHeader/510",
+		"/usr/local/opt/qt/lib/QtCore.framework",
+		"/usr/local/opt/qt/lib/QtCore.framework/Headers",
+		"/usr/local/opt/qt/mkspecs/macx-clang",
+		"/usr/local/opt/qt/lib/QtGui.framework",
+		"/usr/local/opt/qt/lib/QtGui.framework/Headers",
+		"/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers",
+		"/Library/Developer/CommandLineTools/usr/include/c++/v1",
+		"/Library/Developer/CommandLineTools/usr/lib/clang/10.0.0/include",
+		"/Library/Developer/CommandLineTools/usr/include",
+		"/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : 
+	[
+		"/Library/Developer/CommandLineTools/usr/bin/c++",
+		"-dM",
+		"-E",
+		"-c",
+		"/usr/local/Cellar/cmake/3.18.4/share/cmake/Modules/CMakeCXXCompilerABI.cpp"
+	],
+	"MOC_PREDEFS_FILE" : "/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/lib/FileReader/FileReader_autogen/moc_predefs.h",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : [],
+	"MULTI_CONFIG" : false,
+	"PARALLEL" : 6,
+	"PARSE_CACHE_FILE" : "/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/lib/FileReader/CMakeFiles/FileReader_autogen.dir/ParseCache.txt",
+	"QT_MOC_EXECUTABLE" : "/usr/local/opt/qt/bin/moc",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 15,
+	"SETTINGS_FILE" : "/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/lib/FileReader/CMakeFiles/FileReader_autogen.dir/AutogenUsed.txt",
+	"SOURCES" : 
+	[
+		[
+			"/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/lib/FileReader/filereader.cpp",
+			"MU"
+		]
+	],
+	"UIC_OPTIONS" : [],
+	"UIC_SEARCH_PATHS" : [],
+	"UIC_SKIP" : [],
+	"UIC_UI_FILES" : [],
+	"VERBOSITY" : 0
+}

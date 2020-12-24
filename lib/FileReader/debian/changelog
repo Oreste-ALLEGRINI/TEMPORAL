@@ -1,0 +1,18 @@
+file-reader (0.1.2) UNRELEASED; urgency=medium
+
+  * mise en place de la lecture de fichier json raw, et écriture de fichier
+    json 
+
+ -- Marius Lopez <marius.lopez@damavan-imaging.com>  Mon, 03 Jun 2019 16:05:18 +0200
+
+file-reader (0.1.1) xenial; urgency=medium
+
+  * bug fix
+
+ -- Marius LOPEZ <marius.lopez@damavan-imaging.com>  Fri, 25 Jan 2019 17:22:16 +0100
+
+file-reader (0.1.0) xenial; urgency=medium
+
+  * Initial release
+
+ -- Marius LOPEZ <marius.lopez@damavan-imaging.com>  Fri, 18 Jan 2019 16:26:25 +0100

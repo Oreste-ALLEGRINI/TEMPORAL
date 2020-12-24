@@ -1,0 +1,13 @@
+Source: common-quadrator-header
+Maintainer: Marius Lopez <marius.lopez@damavan-imaging.com>
+Section: libs
+Priority: optional
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.7
+
+Package: common-quadrator-header
+Architecture: amd64
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Description: Librarie de lecture de fichier (lqua, cqua, pqua, lpet)
+ Librarie de lecture de fichier (lqua, cqua, pqua, lpet)

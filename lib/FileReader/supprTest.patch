@@ -1,0 +1,15 @@
+diff --git a/filereader.cpp b/filereader.cpp
+index 825ce0c..0e9e746 100644
+--- a/filereader.cpp
++++ b/filereader.cpp
+@@ -570,9 +570,7 @@ FileReader::FileReaderResult FileReader::getNextEventFromFile(PaireEvent *event)
+ {
+ 
+     if(::fread((void *)event,sizeof(PaireEvent),1,entrant) == 1){
+-        if(numseqEntrant++ == event->numero){
+-            return OK;
+-        }else return FILE_CORRUPTED;
++      return OK;
+ 
+     }else if(feof(entrant)){
+         return END_OF_FILE;

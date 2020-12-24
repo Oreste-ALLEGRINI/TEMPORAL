@@ -1,0 +1,7 @@
+/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/CMakeFiles/rebuild_cache.dir
+/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/CMakeFiles/edit_cache.dir
+/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/CMakeFiles/Test.dir
+/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/lib/FileReader/CMakeFiles/rebuild_cache.dir
+/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/lib/FileReader/CMakeFiles/edit_cache.dir
+/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/lib/FileReader/CMakeFiles/FileReader.dir
+/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/build/lib/FileReader/CMakeFiles/FileReader_autogen.dir

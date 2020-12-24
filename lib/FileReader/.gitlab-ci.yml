@@ -1,0 +1,70 @@
+# This file is a template, and might need editing before it works on your project.
+# use the official gcc image, based on debian
+# can use verions as well, like gcc:5.2
+# see https://hub.docker.com/_/gcc/
+image: registry.damavan04.dmv:5005/damavan-imaging/damavanconfiguration
+cache:
+  paths:
+    - ./build
+    
+stages:
+  - build
+  - test
+  - coverage
+  - deployement
+
+#include:
+#  - template: Code-Quality.gitlab-ci.yml
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+build:
+  stage: build
+  # instead of calling g++ directly you can also use some build toolkit like make
+  # install the necessary build tools when needed
+  # before_script:
+  #   - apt update && apt -y install make autoconf
+  script:
+    - "[ -d build ] && rm -rf ./build/* || mkdir build/"
+    - cd ./build && cmake -DFILEREADER_BUILD_TESTS=ON .. && make && pwd
+  
+      # depending on your build setup it's most likely a good idea to cache outputs to reduce the build time
+      # cache:
+      #   paths:
+      #     - "*.o"
+
+# run tests using the binary built before
+test:
+  stage: test
+  script:
+    - cd ./build
+    - make CTEST_OUTPUT_ON_FAILURE=1 test > testReport.txt 2>&1
+  artifacts:
+    paths:
+      - ./build/testReport.txt
+    when: on_failure
+  
+codeCoverage:
+  stage: coverage
+  script:
+    - "[ -d coverage ] && rm -rf ./coverage/* || mkdir coverage/"
+    - gcovr -r . -e tests -e build -e lib && gcovr -r . --html --html-details -o coverage/index.html -e tests -e build -e lib
+  cache:
+    paths:
+      - ./coverage
+      - ./build
+
+pages:
+  stage: deployement
+  script:
+    - cd Doc && doxygen Doxyfile 
+    - cd .. && mv Doc/html public
+    - mv coverage public/coverage
+  cache:
+    paths:
+      - ./coverage
+  artifacts:
+    paths:
+      - public
+  only:
+    - master

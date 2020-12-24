@@ -1,0 +1,12 @@
+#ifndef FILEREADER_GLOBAL_H
+#define FILEREADER_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(FILEREADER_LIBRARY)
+#  define FILEREADERSHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define FILEREADERSHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // FILEREADER_GLOBAL_H

@@ -1,0 +1,3 @@
+[submodule "lib/CommonQuadratorHeader"]
+	path = lib/CommonQuadratorHeader
+	url = ../Commonquadratorheader.git
