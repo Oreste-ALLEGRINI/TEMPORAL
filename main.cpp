@@ -107,6 +107,7 @@ int main(int argc,char ** argv)
     char energy_filter_answer;
     bool energy_filtering;
     int energy_peak_Tile1, energy_peak_Tile2, energy_peak_Tile4;
+    double* peaks_position;
 
     /** computation of temperature range filter*/
     char temper_filter_answer;
@@ -224,8 +225,12 @@ int main(int argc,char ** argv)
         CRT_Canvas->cd();
         Photons_Spectrum_Tile2->Draw();
 
-        //Int_t peak_found = spectrum->Search(Photons_Spectrum_Tile2,2,"",0.10);
-        //std::cout<<peak_found<<std::endl;
+        Int_t peak_found = spectrum->Search(Photons_Spectrum_Tile2,10,"",0.05);
+        peaks_position = spectrum->GetPositionX();
+        std::cout<<peak_found<<std::endl;
+        for (int i=0; i<peak_found; i++){
+            std::cout<<peaks_position[i]<<std::endl;
+        }
 
         if((Photons_Spectrum_Tile1->GetBinCenter(Photons_Spectrum_Tile1->GetMaximumBin()))-((Photons_Spectrum_Tile1->GetBinWidth(Photons_Spectrum_Tile1->GetMaximumBin()))/2) == 0){
             energy_peak_Tile1 = -1;
