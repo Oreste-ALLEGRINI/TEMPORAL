@@ -53,6 +53,7 @@
 #include "TGClient.h"
 #include "TPaveText.h"
 #include "TMath.h"
+#include "TH3.h"
 
 int main(int argc,char ** argv)
 {
@@ -94,6 +95,7 @@ int main(int argc,char ** argv)
     std::array<std::vector<double>,11> record_CRT1_4;
     std::array<std::vector<double>,11> record_CRT1_2;
     std::array<std::vector<double>,11> record_CRT2_4;
+    std::array<std::vector<double>,11> record_CRTA_B;
 
     //Energy vectors
     std::vector<int> record_energy_Tile1;
@@ -107,6 +109,7 @@ int main(int argc,char ** argv)
     char energy_filter_answer;
     bool energy_filtering;
     int energy_peak_Tile1, energy_peak_Tile2, energy_peak_Tile4;
+    int peak_found;
     double* peaks_position;
 
     /** computation of temperature range filter*/
@@ -121,7 +124,7 @@ int main(int argc,char ** argv)
     /////////////////////// Histo/Graphs definition ////////////////////////
 
     /** Temporary graphs for raw data filtering **/
-    //TH1F* T1_T2 = new TH1F("","",83886080,-41943040,41943040);
+    TH1F* TA_TB = new TH1F("","",83886080,-41943040,41943040);
 
     /** Coincidence Time Resolution */
     TH1F* CRT_Tile1_Tile4 = new TH1F("CRT_Diamond_CeBr1","CRT_Diamond_CeBr1", 200, 100, 120);
@@ -135,31 +138,57 @@ int main(int argc,char ** argv)
     CRT_Tile2_Tile4->GetYaxis()->SetTitle("Counts");
 
     /** Photons spectrum */
-    TH1F* Photons_Spectrum_Tile1 = new TH1F("Photons_Spectrum_Tile1","Photons_Spectrum_Tile1", 5000, 0, 100000);
-    TH1D* Photons_Spectrum_Tile2 = new TH1D("Photons_Spectrum_Tile2","Photons_Spectrum_Tile2", 5000, 0, 100000);
-    TH1F* Photons_Spectrum_Tile4 = new TH1F("Photons_Spectrum_Tile4","Photons_Spectrum_Tile4", 5000, 0, 100000);
+    TH1F* Photons_Spectrum_Tile1 = new TH1F("Photons_Spectrum_Tile1","Photons_Spectrum_Tile1", 1000, 0, 20000);
+    TH1D* Photons_Spectrum_Tile2 = new TH1D("Photons_Spectrum_Tile2","Photons_Spectrum_Tile2", 1000, 0, 20000);
+    TH1F* Photons_Spectrum_Tile4 = new TH1F("Photons_Spectrum_Tile4","Photons_Spectrum_Tile4", 1000, 0, 20000);
     TSpectrum *spectrum = new TSpectrum();
 
-    TH1F* Coinc_Photons_Spectrum_Tile12 = new TH1F("Coinc_Photons_Spectrum_Tile1","Coinc_Photons_Spectrum_Tile1", 5000, 0, 100000);
-    TH1F* Coinc_Photons_Spectrum_Tile14 = new TH1F("Coinc_Photons_Spectrum_Tile1","Coinc_Photons_Spectrum_Tile1", 5000, 0, 100000);
-    TH1F* Coinc_Photons_Spectrum_Tile21 = new TH1F("Coinc_Photons_Spectrum_Tile2","Coinc_Photons_Spectrum_Tile2", 5000, 0, 100000);
-    TH1F* Coinc_Photons_Spectrum_Tile24 = new TH1F("Coinc_Photons_Spectrum_Tile1","Coinc_Photons_Spectrum_Tile1", 5000, 0, 100000);
-    TH1F* Coinc_Photons_Spectrum_Tile41 = new TH1F("Coinc_Photons_Spectrum_Tile2","Coinc_Photons_Spectrum_Tile4", 5000, 0, 100000);
-    TH1F* Coinc_Photons_Spectrum_Tile42 = new TH1F("Coinc_Photons_Spectrum_Tile1","Coinc_Photons_Spectrum_Tile1", 5000, 0, 100000);
+    TH1F* Coinc_Photons_Spectrum_Tile12 = new TH1F("Coinc_Photons_Spectrum_Tile1","Coinc_Photons_Spectrum_Tile1", 1000, 0, 20000);
+    TH1F* Coinc_Photons_Spectrum_Tile14 = new TH1F("Coinc_Photons_Spectrum_Tile1","Coinc_Photons_Spectrum_Tile1", 1000, 0, 20000);
+    TH1F* Coinc_Photons_Spectrum_Tile21 = new TH1F("Coinc_Photons_Spectrum_Tile2","Coinc_Photons_Spectrum_Tile2", 1000, 0, 20000);
+    TH1F* Coinc_Photons_Spectrum_Tile24 = new TH1F("Coinc_Photons_Spectrum_Tile2","Coinc_Photons_Spectrum_Tile2", 1000, 0, 20000);
+    TH1F* Coinc_Photons_Spectrum_Tile41 = new TH1F("Coinc_Photons_Spectrum_Tile4","Coinc_Photons_Spectrum_Tile4", 1000, 0, 20000);
+    TH1F* Coinc_Photons_Spectrum_Tile42 = new TH1F("Coinc_Photons_Spectrum_Tile4","Coinc_Photons_Spectrum_Tile4", 1000, 0, 20000);
 
     /** Temperature spectrum */
     TH1F* Temper_Tile1 = new TH1F("Temper_Tile1","Temper_Tile1", 125, -2000, 500);
     TH1F* Temper_Tile2 = new TH1F("Temper_Tile2","Temper_Tile2", 125, -2000, 500);
     TH1F* Temper_Tile4 = new TH1F("Temper_Tile4","Temper_Tile4", 125, -2000, 500);
 
+    /** 1D depth profiles in CeBr detectors*/
+    char axis;
+    TH1F* DepthProfileT2coincT1_T2;
+    TH1F* DepthProfileT4coincT1_T4;
+    TH1F* DepthProfileT2coincT2_T4;
+    TH1F* DepthProfileT4coincT2_T4;
+
     /** 2D mapping of the position of the photons*/
     int DimXY=32;
-    TH2D* mapT2coincT1_T2 = new TH2D("", "", DimXY, -0.5, 8.5, DimXY, 0.5, 8.5);
-    TH2D* mapT4coincT1_T4 = new TH2D("", "", DimXY, -0.5, 8.5, DimXY, 0.5, 8.5);
-    TH2D* mapT2coincT2_T4 = new TH2D("", "", DimXY, -0.5, 8.5, DimXY, 0.5, 8.5);
-    TH2D* mapT4coincT2_T4 = new TH2D("", "", DimXY, -0.5, 8.5, DimXY, 0.5, 8.5);
+    TH2D* mapT2coincT1_T2 = new TH2D("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5);
+    TH2D* mapT4coincT1_T4 = new TH2D("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5);
+    TH2D* mapT2coincT2_T4 = new TH2D("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5);
+    TH2D* mapT4coincT2_T4 = new TH2D("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5);
 
-    ///////////////////////   Canvas definition    ////////////////////////
+    /** 3D mapping of the position of the photons*/
+    TH3F* map3DT2coincT1_T2 = new TH3F("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5, 18, 0.5, 5);
+    map3DT2coincT1_T2->GetXaxis()->SetTitle("X");
+    map3DT2coincT1_T2->GetYaxis()->SetTitle("Y");
+    map3DT2coincT1_T2->GetZaxis()->SetTitle("Z");
+    TH3F* map3DT4coincT1_T4 = new TH3F("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5, 18, 0.5, 5);
+    map3DT4coincT1_T4->GetXaxis()->SetTitle("X");
+    map3DT4coincT1_T4->GetYaxis()->SetTitle("Y");
+    map3DT4coincT1_T4->GetZaxis()->SetTitle("Z");
+    TH3F* map3DT2coincT2_T4 = new TH3F("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5, 18, 0.5, 5);
+    map3DT2coincT2_T4->GetXaxis()->SetTitle("X");
+    map3DT2coincT2_T4->GetYaxis()->SetTitle("Y");
+    map3DT2coincT2_T4->GetZaxis()->SetTitle("Z");
+    TH3F* map3DT4coincT2_T4 = new TH3F("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5, 18, 0.5, 5);
+    map3DT4coincT2_T4->GetXaxis()->SetTitle("X");
+    map3DT4coincT2_T4->GetYaxis()->SetTitle("Y");
+    map3DT4coincT2_T4->GetZaxis()->SetTitle("Z");
+
+    ///////////////////////   Canvas and PAD definition    ////////////////////////
+    TCanvas* ESpectrum_Canvas = new TCanvas("ESpectrum","ESpectrum", 1200, 1200);
     TCanvas* CRT_Canvas = new TCanvas("CRT_Canvas","CRT_Canvas", 1200, 1200);
 
     if(reader.openReadFile(Qfilename) == FileReader::OPENNING_ERROR){
@@ -182,7 +211,7 @@ int main(int argc,char ** argv)
             Tile2_Img.push_back(readTile.image);
         }
 
-        else if(readTile.tuile.tuile==4){
+        else if(readTile.tuile.tuile==4 || readTile.tuile.tuile==3){
             Tile4.push_back(readTile.tuile);
             Tile4_Img.push_back(readTile.image);
         }
@@ -210,8 +239,9 @@ int main(int argc,char ** argv)
     }
 
     if (energy_filtering == true){
-        std::cout<<"Computing the reference energy peak position"<<std::endl;
+        std::cout<<"Research of the energy peak positions in the spectrums"<<std::endl;
 
+        /** Filling, drawing and printing the energy spectrums **/
         for(int i=0; i<Tile1.size(); i++){
             Photons_Spectrum_Tile1->Fill(Tile1.at(i).photons);
         }
@@ -222,34 +252,60 @@ int main(int argc,char ** argv)
             Photons_Spectrum_Tile4->Fill(Tile4.at(i).photons);
         }
 
-        CRT_Canvas->cd();
+        ESpectrum_Canvas->Divide(2,2);
+        ESpectrum_Canvas->cd(1);
+        Photons_Spectrum_Tile1->Draw();
+        ESpectrum_Canvas->cd(2);
         Photons_Spectrum_Tile2->Draw();
+        ESpectrum_Canvas->cd(3);
+        Photons_Spectrum_Tile4->Draw();
 
-        Int_t peak_found = spectrum->Search(Photons_Spectrum_Tile2,10,"",0.05);
-        peaks_position = spectrum->GetPositionX();
-        std::cout<<peak_found<<std::endl;
-        for (int i=0; i<peak_found; i++){
-            std::cout<<peaks_position[i]<<std::endl;
+        /** User's choice of energy filter positions per detector **/
+        if(Photons_Spectrum_Tile1->GetBinContent(1) == Photons_Spectrum_Tile1->GetEntries()){
+            std::cout<<"\n ******** Energy data are not provided for the detector connected on the Tile 1 ******** \n"<<std::endl;
+        }
+        else{
+            peak_found = spectrum->Search(Photons_Spectrum_Tile1,10,"",0.05); //Search the peaks in the spectrum and displays them in the histogram
+            peaks_position = spectrum->GetPositionX();
+            std::cout<<"List of peak positions for Tile 1:"<<std::endl;
+            std::cout<<PrintEnergyPeaks(peaks_position,peak_found)<<std::endl;
         }
 
-        if((Photons_Spectrum_Tile1->GetBinCenter(Photons_Spectrum_Tile1->GetMaximumBin()))-((Photons_Spectrum_Tile1->GetBinWidth(Photons_Spectrum_Tile1->GetMaximumBin()))/2) == 0){
-            energy_peak_Tile1 = -1;
+        if(Photons_Spectrum_Tile2->GetBinContent(1) == Photons_Spectrum_Tile2->GetEntries()){
+            std::cout<<"\n ******** Energy data are not provided for the detector connected on the Tile 2 ******** \n"<<std::endl;
         }
-        else {energy_peak_Tile1 = Photons_Spectrum_Tile1->GetBinCenter(Photons_Spectrum_Tile1->GetMaximumBin());}
+        else{
+            peak_found = spectrum->Search(Photons_Spectrum_Tile2,10,"",0.05); //Search the peaks in the spectrum and displays them in the histogram
+            peaks_position = spectrum->GetPositionX();
+            std::cout<<"List of peak positions for Tile 2:"<<std::endl;
+            std::cout<<PrintEnergyPeaks(peaks_position,peak_found)<<std::endl;
+        }
 
-        if((Photons_Spectrum_Tile2->GetBinCenter(Photons_Spectrum_Tile2->GetMaximumBin()))-((Photons_Spectrum_Tile2->GetBinWidth(Photons_Spectrum_Tile2->GetMaximumBin()))/2) == 0){
-            energy_peak_Tile2 = -1;
+        if(Photons_Spectrum_Tile4->GetBinContent(1) == Photons_Spectrum_Tile4->GetEntries()){
+            std::cout<<"\n ******** Energy data are not provided for the detector connected on the Tile 4 ******** \n"<<std::endl;
         }
-        else {energy_peak_Tile2 = Photons_Spectrum_Tile2->GetBinCenter(Photons_Spectrum_Tile2->GetMaximumBin());}
+        else{
+            peak_found = spectrum->Search(Photons_Spectrum_Tile4,10,"",0.05); //Search the peaks in the spectrum and displays them in the histogram
+            peaks_position = spectrum->GetPositionX();
+            std::cout<<"List of peak positions for Tile 4:"<<std::endl;
+            std::cout<<PrintEnergyPeaks(peaks_position,peak_found)<<std::endl;
+        }
 
-        if((Photons_Spectrum_Tile4->GetBinCenter(Photons_Spectrum_Tile4->GetMaximumBin()))-((Photons_Spectrum_Tile4->GetBinWidth(Photons_Spectrum_Tile4->GetMaximumBin()))/2) == 0){
-            energy_peak_Tile4 = -1;
-        }
-        else {energy_peak_Tile4 = -1/*Photons_Spectrum_Tile4->GetBinCenter(Photons_Spectrum_Tile4->GetMaximumBin())*/;}
+        ESpectrum_Canvas->Modified();
+        ESpectrum_Canvas->Update();
+        gSystem->ProcessEvents();
+
+        std::cout<<"Choose the position of the energy filter window for Tile 1. Press -1 if you don't want apply filter or if the Tile1 is the dead Tile"<<std::endl;
+        std::cin>>energy_peak_Tile1;
+        std::cout<<"For Tile 2 ?"<<std::endl;
+        std::cin>>energy_peak_Tile2;
+        std::cout<<"For Tile 3 or 4 ?"<<std::endl;
+        std::cin>>energy_peak_Tile4;
+
         std::cout<<energy_peak_Tile1<<" "<<energy_peak_Tile2<<" "<<energy_peak_Tile4<<std::endl;
     }
 
-    std::cout<< "Do you want to apply a temperature filter (Max peak value +/- 0.25 \370 C)? (Y/N)"<<std::endl;
+    std::cout<< "Do you want to apply a temperature filter (Max peak value +/- 0.25"<<"\u00B0"<<"C)? (Y/N)"<<std::endl;
     std::cin>>temper_filter_answer;
     temper_filter_answer = towlower (temper_filter_answer);
     switch (temper_filter_answer)
@@ -292,7 +348,6 @@ int main(int argc,char ** argv)
             temper_peak_Tile4 = -1;
         }
         else {temper_peak_Tile4 = Temper_Tile4->GetBinCenter(Temper_Tile4->GetMaximumBin());}
-        std::cout<<temper_peak_Tile1<<" "<<temper_peak_Tile2<<" "<<temper_peak_Tile4<<std::endl;
     }
 
     std::cout << "Sorting the data of each tiles by the timestamp ..." <<std::endl;
@@ -302,18 +357,16 @@ int main(int argc,char ** argv)
     std::sort(Tile4.begin(), Tile4.end(), sort_function());
 
     //////////////////////ONLY USED TO CHECK THE RAW DATA ///////////////////
-    /*std::cout<< "Filtering of events under the time coincidence peak ..."<<std::endl;
-    Coincidence Tile 1 and Tile 2
-    record_CRT1_2 = Global_analysis (Tile1, Tile2);
+    /*std::cout<< "Generating raw data CRT between T2 and T4 ..."<<std::endl;
+    record_CRTA_B = Global_analysis (Tile2, Tile4);
      //Tile 1 - 2 ----> If you want to see the raw data, you just have to write the histogram in the rootfile
-    for(int i=0; i<record_CRT1_2[0].size(); i++){
-        T1_T2->Fill(record_CRT1_2[0].at(i));
+    for(int i=0; i<record_CRTA_B[0].size(); i++){
+        TA_TB->Fill(record_CRTA_B[0].at(i));
     }*/
 
     /////////////////////////////////////////////////////////////////////////
 
     std::cout<< "Research of coincidence events ..."<<std::endl;
-    std::cout<< "Peak location :"<<std::endl;
 
     if((energy_filtering==false) && (temper_filtering==false)){
         /** Coincidence Tile 1 and Tile 4 */
@@ -342,20 +395,36 @@ int main(int argc,char ** argv)
         //////////TODO///////////
     }
 
-
+    std::cout<< "Building the depth profiles ..."<<std::endl;
+    std::cout<< "Choose the axis corresponding to the depth of the Tile2 detector (X,Y or Z) (see the orientation of the detector with respect to the source)"<<std::endl;
+    std::cout<< "    y\n    |\n    |\n    |________z           top surface of the CeBr detectors : XY plane \n   /\n  /\n /x"<<std::endl;
+    std::cin>>axis;
+    DepthProfileT2coincT2_T4 = DepthProfile(record_CRT2_4[5], record_CRT2_4[7], record_CRT2_4[9], axis);
+    std::cout<< "Choose the axis corresponding to the depth of the Tile4 detector"<<std::endl;
+    std::cin>>axis;
+    DepthProfileT4coincT2_T4 = DepthProfile(record_CRT2_4[6], record_CRT2_4[8], record_CRT2_4[10], axis);
 
     std::cout<< "Building the 2D map ..."<<std::endl;
 
-    /** Tile1*/
-    mapT4coincT1_T4 = map2D (record_CRT1_4[6], record_CRT1_4[8], DimXY);
-    /** Tile2*/
-    mapT4coincT2_T4 = map2D (record_CRT2_4[6], record_CRT2_4[8], DimXY);
     /** Tile4*/
+    mapT4coincT1_T4 = map2D (record_CRT1_4[6], record_CRT1_4[8], DimXY);
+
+    mapT4coincT2_T4 = map2D (record_CRT2_4[6], record_CRT2_4[8], DimXY);
+    /** Tile2*/
     mapT2coincT1_T2 = map2D (record_CRT1_2[6], record_CRT1_2[8], DimXY);
 
     mapT2coincT2_T4 = map2D (record_CRT2_4[5], record_CRT2_4[7], DimXY);
 
+    std::cout<< "Building the 3D map ..."<<std::endl;
 
+    /** Tile4*/
+    map3DT4coincT1_T4 = map3D (record_CRT1_4[6], record_CRT1_4[8], record_CRT1_4[10], DimXY);
+
+    map3DT4coincT2_T4 = map3D (record_CRT2_4[6], record_CRT2_4[8], record_CRT2_4[10], DimXY);
+    /** Tile2*/
+    map3DT2coincT1_T2 = map3D (record_CRT1_2[6], record_CRT1_2[8], record_CRT1_2[10], DimXY);
+
+    map3DT2coincT2_T4 = map3D (record_CRT2_4[5], record_CRT2_4[7], record_CRT2_4[9], DimXY);
 
     std::cout << "Creation of graphs and histograms ..." <<std::endl;
 
@@ -396,22 +465,26 @@ int main(int argc,char ** argv)
     }
 
     //std::cout<< Form("%s.root", filename.erase(filename.end()-5, filename.end()))<<std::endl;*/
+    std::cout<<"Press any key to save the data and close the program"<<std::endl;
+    system("read");
 
     std::cout<<"Writing the output root file ..."<<std::endl;
     outroot.cd();
     CRT_Tile1_Tile4->Write("CRT_Diamond_CeBr1");
     CRT_Tile1_Tile2->Write("CRT_Diamond_CeBr2");
     CRT_Tile2_Tile4->Write("CRT_CeBr2_CeBr1");
-    //T1_T2->Write("Test");
-    Photons_Spectrum_Tile1->Write("EnergySpectrumT1");
-    Photons_Spectrum_Tile2->Write("EnergySpectrumT2");
-    Photons_Spectrum_Tile4->Write("EnergySpectrumT4");
+    //TA_TB->Write("Test");
+    ESpectrum_Canvas->Write("EnergySpectrum");
     Coinc_Photons_Spectrum_Tile21->Write("ESpectrumT2whenT1");
     Coinc_Photons_Spectrum_Tile41->Write("ESpectrumT4whenT1");
     Coinc_Photons_Spectrum_Tile24->Write("ESpectrumT2whenT4");
     Coinc_Photons_Spectrum_Tile42->Write("ESpectrumT4whenT2");
+    DepthProfileT2coincT2_T4->Write("Depth profile T2");
+    DepthProfileT4coincT2_T4->Write("Depth profile T4");
     mapT2coincT2_T4->Write("2Dmap_T2");
     mapT4coincT2_T4->Write("2Dmap_T4");
+    map3DT2coincT2_T4->Write("3Dmap_T2");
+    map3DT4coincT2_T4->Write("3Dmap_T4");
     Temper_Tile1->Write("TemperT1");
     Temper_Tile2->Write("TemperT2");
     Temper_Tile4->Write("TemperT4");

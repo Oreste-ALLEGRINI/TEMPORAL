@@ -51,7 +51,9 @@
 #include "TGWindow.h"
 #include "TGClient.h"
 #include "TPaveText.h"
+#include "TPaveLabel.h"
 #include "TMath.h"
+#include "TH3.h"
 
 
 
@@ -181,7 +183,7 @@ std::array<std::vector<double>,11> CRT_filter (std::vector<TuileEvt> TileA, std:
         Hist_Raw_data->Fill(Raw_data[0].at(i));
     }
     CRT_peak = Hist_Raw_data->GetBinCenter(Hist_Raw_data->GetMaximumBin());
-    std::cout<<CRT_peak<<std::endl;
+    //std::cout<<CRT_peak<<std::endl;  //Use it to find the CRT peak and redefine the histogram range
 
     //Data filtering (window +/- 5 ns which also corresponds to +/- 256 timestamp)
     for(int i=0; i<Raw_data[0].size(); i++){
@@ -361,15 +363,53 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
     return record_data;
 }
 
+/** 1D_DepthProfile function
+ * @brief: Reconstruction of the 2D with all events in a Tile without filter and/or CRT selection
+ * @return: TH1F of the interaction depth of the gamma in the detector.
+ * @note: Mainly used for developpement and debug. Recontsruction with CRT selection and filters is more appropriated.
+ * @note: This function doesn't use the X Y Z coordinates obtained by vectorization. Potential 3D reconstruction is the impossible
+ * */
+
+ TH1F* DepthProfile (std::vector<double> PosX, std::vector<double> PosY, std::vector<double> PosZ, char dimension){
+    float dimX;
+    int nbins;
+    if((dimension == ('X' | 'x')) || (dimension == ('Y' | 'y'))){
+        dimX = 8;
+        nbins = 32;
+    }
+    else if(dimension == ('Z' | 'z')){
+        dimX = 5;
+        nbins = 18;
+    }
+
+    TH1F* histo_1d = new TH1F("profile_1D","profile_1D", nbins, 0.5, dimX);
+    if(dimension == ('X' | 'x')){
+        for(int i=0; i<PosX.size(); i++){
+            histo_1d->Fill(PosX.at(i)/1000);
+        }
+    }
+    else if(dimension == ('Y' | 'y')){
+        for(int i=0; i<PosY.size(); i++){
+            histo_1d->Fill(PosY.at(i)/1000);
+        }
+    }
+    else if(dimension == ('Z' | 'z')){
+        for(int i=0; i<PosZ.size(); i++){
+            histo_1d->Fill(PosZ.at(i)/1000);
+        }
+    }
+    return histo_1d;
+}
+
 /** 2D map function
  * @brief: Reconstruction of the 2D with all events in a Tile without filter and/or CRT selection
- * @return: 2D array[8][8] containing the sum of the photons per pixel for the whole acquisition.
+ * @return: TH2D[8][8] containing the sum of the photons per pixel for the whole acquisition.
  * @note: Mainly used for developpement and debug. Recontsruction with CRT selection and filters is more appropriated.
  * @note: This function doesn't use the X Y Z coordinates obtained by vectorization. Potential 3D reconstruction is the impossible
  * */
 
  TH2D* map2D (std::vector<double> PosX, std::vector<double> PosY, int dim){
-    TH2D* map2D = new TH2D("2D_Map", "2D_Map", dim, 0.5, 9.0, dim, 0.5, 8.5);
+    TH2D* map2D = new TH2D("2D_Map", "2D_Map", dim, 0.5, 8.5, dim, 0.5, 8.5);
     //uint32_t map2D [dim][dim];
 
     //loop on data
@@ -379,3 +419,89 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
     return map2D;
 }
 
+ /** 3D map function
+  * @brief: Reconstruction of the 2D with all events in a Tile without filter and/or CRT selection
+  * @return: TH3F [8][8][3] containing the sum of the photons per pixel for the whole acquisition.
+  * @note: Mainly used for developpement and debug. Recontsruction with CRT selection and filters is more appropriated.
+  * @note: This function doesn't use the X Y Z coordinates obtained by vectorization. Potential 3D reconstruction is the impossible
+  * */
+
+  TH3F* map3D (std::vector<double> PosX, std::vector<double> PosY, std::vector<double> PosZ, int dim){
+     TH3F* map3D = new TH3F("3D_Map", "3D_Map", dim, 0.5, 8.5, dim, 0.5, 8.5, 18, 0.5, 5);
+
+     //loop on data
+     for(int i =0; i< PosX.size(); i++){
+         map3D->Fill(PosX.at(i)/1000, PosY.at(i)/1000, PosZ.at(i)/1000);
+     }
+     return map3D;
+ }
+
+ /** PrintEnergyPeaks function
+  * @brief: Display the energy peak positions in a table and print it in the shell
+  * @return: string for pretty printing
+  * */
+ inline std::string PrintEnergyPeaks(double* position, int nb_peak)
+ {
+   std::string result;
+   int width   = 11;
+   char corner = '+';
+   char hline  = '-';
+   char vline  = '|';
+   char sep    = ' ';
+
+   auto hLineSep = [&]() {
+     for(int i=0; i<nb_peak+1;i++){
+       result.push_back(corner);
+       result.append(width,hline);
+     }
+     result.push_back(corner);
+     result.push_back('\n');
+   };
+   auto hLineNumber = [&](){
+       result.push_back(vline);
+       std::string zero = std::to_string(-1);
+       int zeroSize = zero.size();
+       result.append((width-zeroSize)/2 + (zeroSize+1)%2,sep);
+       result.append(zero);
+       result.append((width-zeroSize)/2,sep);
+
+       for(int i=0;i<nb_peak;i++){
+           std::string num = std::to_string(i+1);
+           int numSize = num.size();
+           result.push_back(vline);
+           result.append((width-numSize)/2 + (numSize+1)%2,sep);
+           result.append(num);
+           result.append((width-numSize)/2,sep);
+       }
+       result.push_back(vline);
+       result.push_back('\n');
+   };
+
+   auto hLinePos = [&](){
+       result.push_back(vline);
+       std::string none = "none";
+       int noneSize = none.size();
+       result.append((width-noneSize)/2 + (noneSize+1)%2,sep);
+       result.append(none);
+       result.append((width-noneSize)/2,sep);
+
+       for(int i=0;i<nb_peak;i++){
+           std::string pos = std::to_string((int)position[i]);
+           int posSize = pos.size();
+           result.push_back(vline);
+           result.append((width-posSize)/2 + (posSize+1)%2,sep);
+           result.append(pos);
+           result.append((width-posSize)/2,sep);
+       }
+       result.push_back(vline);
+       result.push_back('\n');
+   };
+
+   //printing
+     hLineSep();
+     hLineNumber();
+     hLineSep();
+     hLinePos();
+     hLineSep();
+   return result;
+ }

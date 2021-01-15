@@ -91,8 +91,12 @@ TGClient.h
 ../functions/TGClient.h
 TPaveText.h
 ../functions/TPaveText.h
+TPaveLabel.h
+../functions/TPaveLabel.h
 TMath.h
 ../functions/TMath.h
+TH3.h
+../functions/TH3.h
 
 ../lib/FileReader/filereader.h
 filereader_global.h
@@ -680,6 +684,10 @@ TArray.h
 TArray.h
 /Users/allegrini/Applications/root-10.14.06/include/TArray.h
 
+/Users/allegrini/Applications/root-10.14.06/include/TAtt3D.h
+Rtypes.h
+/Users/allegrini/Applications/root-10.14.06/include/Rtypes.h
+
 /Users/allegrini/Applications/root-10.14.06/include/TAttAxis.h
 Rtypes.h
 /Users/allegrini/Applications/root-10.14.06/include/Rtypes.h
@@ -1004,6 +1012,12 @@ TMatrixDBasefwd.h
 TH2.h
 /Users/allegrini/Applications/root-10.14.06/include/TH2.h
 
+/Users/allegrini/Applications/root-10.14.06/include/TH3.h
+TH1.h
+/Users/allegrini/Applications/root-10.14.06/include/TH1.h
+TAtt3D.h
+/Users/allegrini/Applications/root-10.14.06/include/TAtt3D.h
+
 /Users/allegrini/Applications/root-10.14.06/include/THashTable.h
 TCollection.h
 /Users/allegrini/Applications/root-10.14.06/include/TCollection.h
@@ -1169,6 +1183,12 @@ TBox.h
 /Users/allegrini/Applications/root-10.14.06/include/TBox.h
 TString.h
 /Users/allegrini/Applications/root-10.14.06/include/TString.h
+
+/Users/allegrini/Applications/root-10.14.06/include/TPaveLabel.h
+TPave.h
+/Users/allegrini/Applications/root-10.14.06/include/TPave.h
+TAttText.h
+/Users/allegrini/Applications/root-10.14.06/include/TAttText.h
 
 /Users/allegrini/Applications/root-10.14.06/include/TPaveText.h
 TPave.h
@@ -1515,6 +1535,8 @@ TPaveText.h
 /Users/allegrini/Documents/11.CameraTemporal/TestFileReader/TPaveText.h
 TMath.h
 /Users/allegrini/Documents/11.CameraTemporal/TestFileReader/TMath.h
+TH3.h
+/Users/allegrini/Documents/11.CameraTemporal/TestFileReader/TH3.h
 
 /usr/local/opt/qt/lib/QtCore.framework/Headers/QDataStream
 qdatastream.h
