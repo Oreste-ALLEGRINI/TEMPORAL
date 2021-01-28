@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <cstring>
 #include <cstdlib>
+#include <cstddef>
 #include <cmath>
 #include <dirent.h> //class used to manipulate and traverse directories
 #include <stdio.h>
@@ -55,6 +56,35 @@
 #include "TMath.h"
 #include "TH3.h"
 
+
+/** SplitFilename function
+ * @brief: split the full path of filename and extension to add  the output repository in the path
+ * @return: the full path of the output analysis file (without extension)
+ * @note:
+ * */
+std::string SplitFilename (const std::string& str, std::string repository)
+{
+  std::string file;
+  std::string interfile;
+  std::size_t rm_path = str.find_last_of("/\\");
+  file = str.substr(0,rm_path);
+  file = (const std::string&)file;
+  rm_path = file.find_last_not_of("/\\");
+  file = file.substr(0,rm_path);
+  rm_path = file.find_last_of("/\\");
+  file = file.substr(0,rm_path);
+  file+=repository;
+
+  rm_path = str.find_last_of("/\\");
+  interfile = str.substr(rm_path+1);
+  interfile = (const std::string&)interfile;
+  interfile = interfile.substr(0,rm_path);
+  std::size_t rm_ext = interfile.find_last_of(".");
+  interfile = interfile.substr(0,rm_ext);
+
+  file+=interfile;
+  return file;
+}
 
 
 /** sort_in_time function
@@ -217,6 +247,7 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
         ///////////////// energy filtering only ///////////////////
         if(nrg_filtering == true && tmp_filtering == false){
             if((energy_peak_TileA != -1) && (energy_peak_TileB != -1)){
+                //if((input_data[1].at(i) >= 1.1*energy_peak_TileA) && (input_data[2].at(i) >= 1.1*energy_peak_TileB)){ //==> Filter to study the Compton events of 1275 keV gammas from 22Na source
                 if((input_data[1].at(i) >= energy_peak_TileA*0.9) && (input_data[1].at(i) <= energy_peak_TileA*1.1) && (input_data[2].at(i) >= energy_peak_TileB*0.9) && (input_data[2].at(i) <= energy_peak_TileB*1.1)){
                     record_data[0].push_back(input_data[0].at(i));
                     record_data[1].push_back(input_data[1].at(i));
@@ -343,7 +374,7 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
                 }
             }
             else if(energy_peak_TileB == -1){
-                if(((input_data[1].at(i) >= energy_peak_TileA*0.9) && (input_data[1].at(i) >= energy_peak_TileA*1.1)) && ((input_data[3].at(i) >= temper_peak_TileA-25) && (input_data[3].at(i) >= temper_peak_TileA+25))){
+                if(((input_data[1].at(i) >= energy_peak_TileA*0.9) && (input_data[1].at(i) <= energy_peak_TileA*1.1)) && ((input_data[3].at(i) >= temper_peak_TileA-25) && (input_data[3].at(i) <= temper_peak_TileA+25))){
                     record_data[0].push_back(input_data[0].at(i));
                     record_data[1].push_back(input_data[1].at(i));
                     record_data[2].push_back(input_data[2].at(i));
@@ -374,28 +405,34 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
     float dimX;
     int nbins;
     if((dimension == ('X' | 'x')) || (dimension == ('Y' | 'y'))){
-        dimX = 8;
-        nbins = 32;
+        dimX = 31;
+        nbins = 8;
     }
     else if(dimension == ('Z' | 'z')){
-        dimX = 5;
-        nbins = 18;
+        dimX = 50;
+        nbins = 8;
     }
 
-    TH1F* histo_1d = new TH1F("profile_1D","profile_1D", nbins, 0.5, dimX);
+    TH1F* histo_1d = new TH1F("profile_1D","profile_1D", nbins, 0, dimX);
+    histo_1d->SetTitle(";Position (mm);Counts");
+    histo_1d->GetXaxis()->SetLabelFont(22);
+    histo_1d->GetXaxis()->SetTitleFont(22);
+    histo_1d->GetYaxis()->SetLabelFont(22);
+    histo_1d->GetYaxis()->SetTitleFont(22);
+    histo_1d->SetLineWidth(2);
     if(dimension == ('X' | 'x')){
         for(int i=0; i<PosX.size(); i++){
-            histo_1d->Fill(PosX.at(i)/1000);
+            histo_1d->Fill((PosX.at(i)-500)/(8000/31));
         }
     }
     else if(dimension == ('Y' | 'y')){
         for(int i=0; i<PosY.size(); i++){
-            histo_1d->Fill(PosY.at(i)/1000);
+            histo_1d->Fill((PosY.at(i)-500)/(8000/31));
         }
     }
     else if(dimension == ('Z' | 'z')){
         for(int i=0; i<PosZ.size(); i++){
-            histo_1d->Fill(PosZ.at(i)/1000);
+            histo_1d->Fill((PosZ.at(i)/100));
         }
     }
     return histo_1d;
@@ -404,17 +441,22 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
 /** 2D map function
  * @brief: Reconstruction of the 2D with all events in a Tile without filter and/or CRT selection
  * @return: TH2D[8][8] containing the sum of the photons per pixel for the whole acquisition.
- * @note: Mainly used for developpement and debug. Recontsruction with CRT selection and filters is more appropriated.
+ * @note: Mainly used for developpement and debug. Reconstruction with CRT selection and filters is more appropriated.
  * @note: This function doesn't use the X Y Z coordinates obtained by vectorization. Potential 3D reconstruction is the impossible
  * */
 
  TH2D* map2D (std::vector<double> PosX, std::vector<double> PosY, int dim){
-    TH2D* map2D = new TH2D("2D_Map", "2D_Map", dim, 0.5, 8.5, dim, 0.5, 8.5);
+    TH2D* map2D = new TH2D("2D_Map", "2D_Map", dim, 0, 3.1, dim, 0, 3.1);
+    map2D->SetTitle(";X (cm);Y (cm)");
+    map2D->GetXaxis()->SetLabelFont(22);
+    map2D->GetXaxis()->SetTitleFont(22);
+    map2D->GetYaxis()->SetLabelFont(22);
+    map2D->GetYaxis()->SetTitleFont(22);
     //uint32_t map2D [dim][dim];
 
     //loop on data
     for(int i =0; i< PosX.size(); i++){
-        map2D->Fill(PosX.at(i)/1000, PosY.at(i)/1000);
+        map2D->Fill((PosX.at(i)-500)/(8000/3.1), (PosY.at(i)-500)/(8000/3.1));
     }
     return map2D;
 }
@@ -427,14 +469,44 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
   * */
 
   TH3F* map3D (std::vector<double> PosX, std::vector<double> PosY, std::vector<double> PosZ, int dim){
-     TH3F* map3D = new TH3F("3D_Map", "3D_Map", dim, 0.5, 8.5, dim, 0.5, 8.5, 18, 0.5, 5);
+     TH3F* map3D = new TH3F("3D_Map", "3D_Map", dim, 0, 3.1, dim, 0, 3.1, 18, 0, 5);
+     map3D->SetTitle(";X (cm);Y (cm);Z (cm)");
+     map3D->GetXaxis()->SetLabelFont(22);
+     map3D->GetXaxis()->SetTitleFont(22);
+     map3D->GetYaxis()->SetLabelFont(22);
+     map3D->GetYaxis()->SetTitleFont(22);
+     map3D->GetZaxis()->SetLabelFont(22);
+     map3D->GetZaxis()->SetTitleFont(22);
 
      //loop on data
      for(int i =0; i< PosX.size(); i++){
-         map3D->Fill(PosX.at(i)/1000, PosY.at(i)/1000, PosZ.at(i)/1000);
+         map3D->Fill((PosX.at(i)-500)/(8000/3.1), (PosY.at(i)-500)/(8000/3.1), PosZ.at(i)/(2000/2));
      }
      return map3D;
  }
+
+  /** E_TileA_vs_E_TileB
+   * @brief: Reconstruction of the 2D with all events in a Tile without filter and/or CRT selection
+   * @return: TH2D[8][8] containing the sum of the photons per pixel for the whole acquisition.
+   * @note: Mainly used for developpement and debug. Recontsruction with CRT selection and filters is more appropriated.
+   * @note: This function doesn't use the X Y Z coordinates obtained by vectorization. Potential 3D reconstruction is the impossible
+   * */
+
+   TH2D* E_TileA_vs_E_TileB (std::vector<double> E_TileA, std::vector<double> E_TileB){
+      TH2D* ETAvsETB = new TH2D("", "", 1200, 0, 12000, 1200, 0, 12000);
+      ETAvsETB->SetTitle(";E_TileA (a.u);E_TileB (a.u)");
+      ETAvsETB->GetXaxis()->SetLabelFont(22);
+      ETAvsETB->GetXaxis()->SetTitleFont(22);
+      ETAvsETB->GetYaxis()->SetLabelFont(22);
+      ETAvsETB->GetYaxis()->SetTitleFont(22);
+      //uint32_t map2D [dim][dim];
+
+      //loop on data
+      for(int i =0; i< E_TileA.size(); i++){
+          ETAvsETB->Fill(E_TileA.at(i), E_TileB.at(i));
+      }
+      return ETAvsETB;
+  }
 
  /** PrintEnergyPeaks function
   * @brief: Display the energy peak positions in a table and print it in the shell
