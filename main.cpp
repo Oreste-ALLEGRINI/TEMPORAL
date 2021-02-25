@@ -226,6 +226,29 @@ int main(int argc,char ** argv)
     Coinc_Photons_Spectrum_Tile42->GetYaxis()->SetTitleFont(22);
     Coinc_Photons_Spectrum_Tile42->SetLineWidth(2);
 
+    TH1F* X = new TH1F("X","X", 1000, 0, 10000);
+    X->SetTitle(";Energy (a.u);Counts");
+    X->GetXaxis()->SetLabelFont(22);
+    X->GetXaxis()->SetTitleFont(22);
+    X->GetYaxis()->SetLabelFont(22);
+    X->GetYaxis()->SetTitleFont(22);
+    X->SetLineWidth(2);
+
+    TH1F* Y = new TH1F("X","X", 1000, 0, 10000);
+    Y->SetTitle(";Energy (a.u);Counts");
+    Y->GetXaxis()->SetLabelFont(22);
+    Y->GetXaxis()->SetTitleFont(22);
+    Y->GetYaxis()->SetLabelFont(22);
+    Y->GetYaxis()->SetTitleFont(22);
+    Y->SetLineWidth(2);
+    TH1F* Z = new TH1F("X","X", 1000, 0, 10000);
+    Z->SetTitle(";Energy (a.u);Counts");
+    Z->GetXaxis()->SetLabelFont(22);
+    Z->GetXaxis()->SetTitleFont(22);
+    Z->GetYaxis()->SetLabelFont(22);
+    Z->GetYaxis()->SetTitleFont(22);
+    Z->SetLineWidth(2);
+
     TH2D* PhotonSpectrumT2vsT4 = new TH2D("", "", 1200, 0, 12000, 1200, 0, 12000);
 
     /** Temperature spectrum */
@@ -246,6 +269,9 @@ int main(int argc,char ** argv)
     TH2D* mapT4coincT1_T4 = new TH2D("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5);
     TH2D* mapT2coincT2_T4 = new TH2D("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5);
     TH2D* mapT4coincT2_T4 = new TH2D("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5);
+    // Raw floodmap study without any filtering
+    TH2D* mapTAcoincTA_TB = new TH2D("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5);
+    TH2D* mapTBcoincTA_TB = new TH2D("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5);
 
     /** 3D mapping of the position of the photons*/
     TH3F* map3DT2coincT1_T2 = new TH3F("", "", DimXY, 0.5, 8.5, DimXY, 0.5, 8.5, 18, 0.5, 5);
@@ -436,34 +462,38 @@ int main(int argc,char ** argv)
     std::sort(Tile2.begin(), Tile2.end(), sort_function());
     std::sort(Tile4.begin(), Tile4.end(), sort_function());
 
-    //////////////////////ONLY USED TO CHECK THE RAW DATA ///////////////////
+    //////////////////////ONLY USED TO CHECK THE RAW DATA AND RAW 2D MAP ///////////////////
     /*std::cout<< "Generating raw data CRT between T2 and T4 ..."<<std::endl;
     record_CRTA_B = Global_analysis (Tile2, Tile4);
      //Tile 1 - 2 ----> If you want to see the raw data, you just have to write the histogram in the rootfile
     for(int i=0; i<record_CRTA_B[0].size(); i++){
         TA_TB->Fill(record_CRTA_B[0].at(i));
+    }
+    if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
+    mapTAcoincTA_TB = map2D (record_CRTA_B[5], record_CRTA_B[7], DimXY);
+    mapTBcoincTA_TB = map2D (record_CRTA_B[6], record_CRTA_B[8], DimXY);
     }*/
 
-    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////
 
     std::cout<< "Research of coincidence events ..."<<std::endl;
 
     if((energy_filtering==false) && (temper_filtering==false)){
         /** Coincidence Tile 1 and Tile 4 */
         if((Tile1.empty()!=true) && (Tile4.empty()!=true)){
-        record_CRT1_4 = CRT_filter (Tile1, Tile4);
+        record_CRT1_4 = CRT_filter (Tile1, Tile4, Tile1_Img, Tile4_Img);
         }
         else{std::cout<<"Tile 1 or 4 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
 
         /** Coincidence Tile 1 and Tile 2 */
         if((Tile1.empty()!=true) && (Tile2.empty()!=true)){
-        record_CRT1_2 = CRT_filter (Tile1, Tile2);
+        record_CRT1_2 = CRT_filter (Tile1, Tile2, Tile1_Img, Tile2_Img);
         }
         else{std::cout<<"Tile 1 or 2 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
 
         /** Coincidence Tile 2 and Tile 4 */
         if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
-        record_CRT2_4 = CRT_filter (Tile2, Tile4);
+        record_CRT2_4 = CRT_filter (Tile2, Tile4, Tile2_Img, Tile4_Img);
         }
         else{std::cout<<"Tile 2 or 4 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
 
@@ -473,17 +503,17 @@ int main(int argc,char ** argv)
     else{
         /** Coincidence Tile 1 and Tile 4 */
         if((Tile1.empty()!=true) && (Tile4.empty()!=true)){
-        record_CRT1_4 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile1, energy_peak_Tile4, temper_peak_Tile1, temper_peak_Tile4, Tile1, Tile4);
+        record_CRT1_4 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile1, energy_peak_Tile4, temper_peak_Tile1, temper_peak_Tile4, Tile1, Tile4, Tile1_Img, Tile4_Img);
         }
 
         /** Coincidence Tile 1 and Tile 2 */
         if((Tile1.empty()!=true) && (Tile2.empty()!=true)){
-        record_CRT1_2 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile1, energy_peak_Tile2, temper_peak_Tile1, temper_peak_Tile2, Tile1, Tile2);
+        record_CRT1_2 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile1, energy_peak_Tile2, temper_peak_Tile1, temper_peak_Tile2, Tile1, Tile2, Tile1_Img, Tile2_Img);
         }
 
         /** Coincidence Tile 2 and Tile 4 */
         if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
-        record_CRT2_4 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile2, energy_peak_Tile4, temper_peak_Tile2, temper_peak_Tile4, Tile2, Tile4);
+        record_CRT2_4 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile2, energy_peak_Tile4, temper_peak_Tile2, temper_peak_Tile4, Tile2, Tile4, Tile2_Img, Tile4_Img);
         }
 
         /** Coincidence between Tile 2 and 4 with trigger signal provided by Tile 1 */
@@ -584,6 +614,19 @@ int main(int argc,char ** argv)
         Coinc_Photons_Spectrum_Tile42->Fill(record_CRT2_4[2].at(i));
     }
 
+    /** This part of program is dedicated to recover the raw data positions to check the good match between the values and the data format structure*/
+    /*for(int i=0; i<record_CRT2_4[8].size(); i++){
+        X->Fill(record_CRT2_4[8].at(i));
+    }
+    for(int i=0; i<record_CRT2_4[9].size(); i++){
+        Y->Fill(record_CRT2_4[9].at(i));
+    }
+
+    for(int i=0; i<record_CRT2_4[10].size(); i++){
+        Z->Fill(record_CRT2_4[10].at(i));
+    }*/
+    /** End of addtionnal part of program **/
+
     //std::cout<< Form("%s.root", filename.erase(filename.end()-5, filename.end()))<<std::endl;*/
     std::cout<<"Press any key to save the data and close the program"<<std::endl;
     system("read");
@@ -594,6 +637,8 @@ int main(int argc,char ** argv)
     CRT_Tile1_Tile2->Write("CRT_Diamond_CeBr2");
     CRT_Tile2_Tile4->Write("CRT_CeBr2_CeBr1");
     //TA_TB->Write("Test");
+    //mapTAcoincTA_TB->Write("Raw_Floodmap_T2");
+    //mapTBcoincTA_TB->Write("Raw_Floodmap_T4");
     ESpectrum_Canvas->Write("EnergySpectrum");
     PhotonSpectrumT2vsT4->Write("E_T2_vs_E_T4");
     Coinc_Photons_Spectrum_Tile21->Write("ESpectrumT2whenT1");
@@ -609,6 +654,9 @@ int main(int argc,char ** argv)
     Temper_Tile1->Write("TemperT1");
     Temper_Tile2->Write("TemperT2");
     Temper_Tile4->Write("TemperT4");
+    //X->Write("PosX");
+    //Y->Write("PosY");
+    //Z->Write("PosZ");
 
     return 0;
 }

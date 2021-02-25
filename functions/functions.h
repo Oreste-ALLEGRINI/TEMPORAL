@@ -101,39 +101,106 @@ struct sort_function
     }
 };
 
+/** sort_CRT
+ * @brief: This function sort the g_die data of the TuilImg
+ * @return: Sorted CRT
+ * @note:
+ * */
+int* sort_CRT(int array[4][4])
+{
+    for(int ir=0;ir<4;ir++)
+         {
+            for(int ic=0;ic<4;ic++)
+            {
+                for(int jr=0;jr<4;jr++)
+                {
+                        for(int jc=0;jc<4;jc++)
+                        {
+                    if(array[ir][jr]<array[ic][jc])
+                    {
+                        int temp=array[ir][jr];
+                        array[ir][jr]=array[ic][jc];
+                        array[ic][jc]=temp;
+                        }
+                    }
+                }
+            }
+        }
+    /*for(int y=0; y<4; y++){
+        for(int yy=0; yy<4; yy++){
+            std::cout<<array[y][yy]<<std::endl;
+        }
+    }*/
+    return reinterpret_cast<int *>(array);
+}
+
+/** Average calculation
+ * @brief:  This function calculates the average value of the 3 first die from the sorted data created by sort_CRT.
+ * @return: The int value of the average of the time of the three first hitted die per Tile.
+ * @note:
+ * */
+double average_CRT(int* sorted_data){
+    double CRT_corr=0;
+    int k=0;
+    for(int i=0; i<4; i++){
+        for(int ii=0; ii<4; ii++){
+            if((*((int*)sorted_data + (i * 4) + ii) != -1) && (k<3)){ //here the die not hitted (with -1 value are skipped)
+                CRT_corr += *((int*)sorted_data + (i * 4) + ii);
+                k++;
+            }
+        }
+    }
+    // Computation of the average
+    CRT_corr /= 3;
+    return CRT_corr;
+}
+
+/** CRT_calculation
+ * @brief: This function uses the data contained in the TuileImage.g_die to compute the mean CRT of the 3 first die. First the hit time of each die is sorted and then the 3 first time are use to calculate the average
+ * @return: The int value of the average of the time of the three first hitted die per Tile.
+ * @note:
+ * */
+double CRT_calculation (int frame, std::vector<TuileImg> TileImg) {
+    int entry_die[4][4];
+    int* time_die;
+    double avr_CRT;
+
+    //Recovering the dies data of the events frameA and frameB
+    for(int i=0; i<4; i++){
+        for(int ii=0; ii<4; ii++){
+            entry_die[i][ii] = TileImg.at(frame).g_die[i][ii];
+        }
+    }
+    //Sorting the data in ascending order
+    //std::sort((unsigned int*)&entry_die[0][0], (unsigned int *)&entry_die[1][2]);
+    time_die = sort_CRT(entry_die);
+    //Computation of the average of the 3 first die time
+    avr_CRT = average_CRT(time_die);
+
+    return avr_CRT;
+}
+
+
 /** Global analysis function
  * @brief: This function recovers the events which have a corresponding frame number (time coincidence)
  * @return: array of vectors containing: [0] CRT values [1]Energy data of Tile A [2] Energy data of Tile B [3] Temperature TileA [4] Temperature TileB [5] X position Tile A [6] Y position Tile A [7] Z position TileA [8][9][10] positions for tile B
  * @note: Future improvements: Additionnal recording of the x,y,z positions after the different filtering options
  * */
 
-std::array<std::vector<double>,11> Global_analysis (std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB){
+std::array<std::vector<double>,11> Global_analysis (std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB){
     int it_TileA = 0, it_TileB = 0, CRT_true = 0, CRT = 0, energy_TileA =0, energy_TileB = 0, frameB = 0, temper_TileA = 0, temper_TileB = 0, posX_TileA = 0, posX_TileB = 0, posY_TileA = 0, posY_TileB = 0, posZ_TileA = 0, posZ_TileB = 0;
     bool real_value = false;
+    float progress=0.0;
+    double CRT_corrA= 0, CRT_corrB = 0;
     std::array<std::vector<double>,11> record_data;
-    while(((TileA.at(it_TileA+1).htimestamp) == (TileA.at(it_TileA).htimestamp)) || ((TileA.at(it_TileA).htimestamp) < (TileB.at(it_TileB).htimestamp))){
-        it_TileA++;
-    }
-    while(((TileB.at(it_TileB).htimestamp) <= (TileA.at(it_TileA).htimestamp)) && ((it_TileA < (TileA.size()-1)) && (it_TileB < (TileB.size()-1)))){
-        if ((TileB.at(it_TileB).htimestamp) == (TileA.at(it_TileA).htimestamp)){
-            if(CRT==0 && real_value == false){
-                frameB = it_TileB;
-                CRT = std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF)));
-                CRT_true = (TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF);
-                energy_TileA = TileA.at(it_TileA).photons;
-                energy_TileB = TileB.at(frameB).photons;
-                temper_TileA = TileA.at(it_TileA).temper;
-                temper_TileB = TileB.at(frameB).temper;
-                posX_TileA = TileA.at(it_TileA).mX;
-                posX_TileB = TileB.at(frameB).mX;
-                posY_TileA = TileA.at(it_TileA).mY;
-                posY_TileB = TileB.at(frameB).mY;
-                posZ_TileA = TileA.at(it_TileA).mZ;
-                posZ_TileB = TileB.at(frameB).mZ;
-                real_value = true;
-            }
-            else if(real_value == true){
-                if(std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(it_TileB).ltimestamp&0x00FFFFFF))) <= CRT){
+    while(progress < 1.0) {
+        int barWidth = 70;
+        while(((TileA.at(it_TileA+1).htimestamp) == (TileA.at(it_TileA).htimestamp)) || ((TileA.at(it_TileA).htimestamp) < (TileB.at(it_TileB).htimestamp))){
+            it_TileA++;
+        }
+        while(((TileB.at(it_TileB).htimestamp) <= (TileA.at(it_TileA).htimestamp)) && ((it_TileA < (TileA.size()-1)) && (it_TileB < (TileB.size()-1)))){
+            if ((TileB.at(it_TileB).htimestamp) == (TileA.at(it_TileA).htimestamp)){
+                if(CRT==0 && real_value == false){
                     frameB = it_TileB;
                     CRT = std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF)));
                     CRT_true = (TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF);
@@ -147,52 +214,87 @@ std::array<std::vector<double>,11> Global_analysis (std::vector<TuileEvt> TileA,
                     posY_TileB = TileB.at(frameB).mY;
                     posZ_TileA = TileA.at(it_TileA).mZ;
                     posZ_TileB = TileB.at(frameB).mZ;
+                    real_value = true;
+                }
+                else if(real_value == true){
+                    if(std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(it_TileB).ltimestamp&0x00FFFFFF))) <= CRT){
+                        frameB = it_TileB;
+                        CRT = std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF)));
+                        CRT_true = (TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF);
+                        energy_TileA = TileA.at(it_TileA).photons;
+                        energy_TileB = TileB.at(frameB).photons;
+                        temper_TileA = TileA.at(it_TileA).temper;
+                        temper_TileB = TileB.at(frameB).temper;
+                        posX_TileA = TileA.at(it_TileA).mX;
+                        posX_TileB = TileB.at(frameB).mX;
+                        posY_TileA = TileA.at(it_TileA).mY;
+                        posY_TileB = TileB.at(frameB).mY;
+                        posZ_TileA = TileA.at(it_TileA).mZ;
+                        posZ_TileB = TileB.at(frameB).mZ;
+                    }
                 }
             }
-        }
-        it_TileB++;
-        while ((TileB.at(it_TileB).htimestamp) > (TileA.at(it_TileA).htimestamp) && ((it_TileA < (TileA.size()-1)) && (it_TileB < (TileB.size()-1)))){
-            if (TileA.at(it_TileA).htimestamp == TileB.at(frameB).htimestamp){
-                if(std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF))) < CRT){
-                    CRT = std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF)));
-                    CRT_true = (TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF);
-                    energy_TileA = TileA.at(it_TileA).photons;
-                    energy_TileB = TileB.at(frameB).photons;
-                    temper_TileA = TileA.at(it_TileA).temper;
-                    temper_TileB = TileB.at(frameB).temper;
-                    posX_TileA = TileA.at(it_TileA).mX;
-                    posX_TileB = TileB.at(frameB).mX;
-                    posY_TileA = TileA.at(it_TileA).mY;
-                    posY_TileB = TileB.at(frameB).mY;
-                    posZ_TileA = TileA.at(it_TileA).mZ;
-                    posZ_TileB = TileB.at(frameB).mZ;
+            it_TileB++;
+            while ((TileB.at(it_TileB).htimestamp) > (TileA.at(it_TileA).htimestamp) && ((it_TileA < (TileA.size()-1)) && (it_TileB < (TileB.size()-1)))){
+                if (TileA.at(it_TileA).htimestamp == TileB.at(frameB).htimestamp){
+                    if(std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF))) < CRT){
+                        CRT = std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF)));
+                        CRT_true = (TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(frameB).ltimestamp&0x00FFFFFF);
+                        energy_TileA = TileA.at(it_TileA).photons;
+                        energy_TileB = TileB.at(frameB).photons;
+                        temper_TileA = TileA.at(it_TileA).temper;
+                        temper_TileB = TileB.at(frameB).temper;
+                        posX_TileA = TileA.at(it_TileA).mX;
+                        posX_TileB = TileB.at(frameB).mX;
+                        posY_TileA = TileA.at(it_TileA).mY;
+                        posY_TileB = TileB.at(frameB).mY;
+                        posZ_TileA = TileA.at(it_TileA).mZ;
+                        posZ_TileB = TileB.at(frameB).mZ;
+                    }
+                    if (((TileA.at(it_TileA+1).htimestamp) > (TileA.at(it_TileA).htimestamp)) && (it_TileA+1 <= TileA.size())){
+                        //CRT_corrA = CRT_calculation(it_TileA, TileImgA);
+                        record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256*/);
+                        record_data[1].push_back(energy_TileA);
+                        record_data[2].push_back(energy_TileB);
+                        record_data[3].push_back(temper_TileA);
+                        record_data[4].push_back(temper_TileB);
+                        record_data[5].push_back(posX_TileA);
+                        record_data[6].push_back(posX_TileB);
+                        record_data[7].push_back(posY_TileA);
+                        record_data[8].push_back(posY_TileB);
+                        record_data[9].push_back(posZ_TileA);
+                        record_data[10].push_back(posZ_TileB);
+                        CRT = 0;
+                        CRT_true = 0;
+                        energy_TileA = 0;
+                        energy_TileB = 0;
+                        temper_TileA = 0;
+                        temper_TileB = 0;
+                        posX_TileA = 0; posY_TileA = 0; posZ_TileA =0;
+                        posX_TileB = 0; posY_TileB = 0; posZ_TileB =0;
+                        real_value = false;
+
+                        std::cout << "[";
+                            int pos = barWidth * progress;
+                            for (int i = 0; i < barWidth; ++i) {
+                                if (i < pos) std::cout << "=";
+                                else if (i == pos) std::cout << ">";
+                                else std::cout << " ";
+                            }
+                        std::cout << "] " << int(progress * 100.0) << " %\r";
+                            std::cout.flush();
+                        //CRT_calculation(it_TileA, TileImgA);
+                        //CRT_calculation(frameB, TileImgB);
+                            progress = (float)it_TileA/TileA.size();
+
+                    }
                 }
-                if (((TileA.at(it_TileA+1).htimestamp) > (TileA.at(it_TileA).htimestamp)) && (it_TileA+1 <= TileA.size())){
-                    record_data[0].push_back((double)CRT_true*5/256);
-                    record_data[1].push_back(energy_TileA);
-                    record_data[2].push_back(energy_TileB);
-                    record_data[3].push_back(temper_TileA);
-                    record_data[4].push_back(temper_TileB);
-                    record_data[5].push_back(posX_TileA);
-                    record_data[6].push_back(posX_TileB);
-                    record_data[7].push_back(posY_TileA);
-                    record_data[8].push_back(posY_TileB);
-                    record_data[9].push_back(posZ_TileA);
-                    record_data[10].push_back(posZ_TileB);
-                    CRT = 0;
-                    CRT_true = 0;
-                    energy_TileA = 0;
-                    energy_TileB = 0;
-                    temper_TileA = 0;
-                    temper_TileB = 0;
-                    posX_TileA = 0; posY_TileA = 0; posZ_TileA =0;
-                    posX_TileB = 0; posY_TileB = 0; posZ_TileB =0;
-                    real_value = false;
-                }
+                it_TileA++;
             }
-            it_TileA++;
         }
+        progress = 1;
     }
+    std::cout << std::endl;
     return record_data;
 }
 
@@ -201,12 +303,12 @@ std::array<std::vector<double>,11> Global_analysis (std::vector<TuileEvt> TileA,
  * @return: array of vectors containing ([0] CRT [1] Energy TileA [2] Energy TileB) of physical events under the peak.
  * @note: The function Global_analysis is called to provide the data having a frame coincidence in the two tiles which are compared
  **/
-std::array<std::vector<double>,11> CRT_filter (std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB){
+std::array<std::vector<double>,11> CRT_filter (std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB){
     std::array<std::vector<double>,11> Raw_data;
     std::array<std::vector<double>,11> Clear_data;
     double CRT_peak;
     TH1F* Hist_Raw_data = new TH1F("","",83886080,-41943040,41943040);
-    Raw_data = Global_analysis(TileA, TileB);
+    Raw_data = Global_analysis(TileA, TileB, TileImgA, TileImgB);
 
     //Seek for the CRT peak
     for(int i=0; i<Raw_data[0].size(); i++){
@@ -239,10 +341,10 @@ std::array<std::vector<double>,11> CRT_filter (std::vector<TuileEvt> TileA, std:
  * @return: array of vectors containing ([0] CRT [1] Energy TileA [2] Energy TileB) of physical events under the peak.
  * @note: The function CRT_filter is called to provide the input data
  **/
-std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tmp_filtering, int energy_peak_TileA, int energy_peak_TileB, int temper_peak_TileA, int temper_peak_TileB, std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB){
+std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tmp_filtering, int energy_peak_TileA, int energy_peak_TileB, int temper_peak_TileA, int temper_peak_TileB, std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB){
     std::array<std::vector<double>,11> input_data;
     std::array<std::vector<double>,11> record_data;
-    input_data = CRT_filter(TileA, TileB);
+    input_data = CRT_filter(TileA, TileB, TileImgA, TileImgB);
     for(int i=0; i<input_data[0].size(); i++){
         ///////////////// energy filtering only ///////////////////
         if(nrg_filtering == true && tmp_filtering == false){
@@ -405,11 +507,11 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
     float dimX;
     int nbins;
     if((dimension == ('X' | 'x')) || (dimension == ('Y' | 'y'))){
-        dimX = 31;
+        dimX = 32;
         nbins = 8;
     }
     else if(dimension == ('Z' | 'z')){
-        dimX = 50;
+        dimX = 20;
         nbins = 8;
     }
 
@@ -422,17 +524,17 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
     histo_1d->SetLineWidth(2);
     if(dimension == ('X' | 'x')){
         for(int i=0; i<PosX.size(); i++){
-            histo_1d->Fill((PosX.at(i)-500)/(8000/31));
+            histo_1d->Fill((PosX.at(i)-500)/(8000/32));
         }
     }
     else if(dimension == ('Y' | 'y')){
         for(int i=0; i<PosY.size(); i++){
-            histo_1d->Fill((PosY.at(i)-500)/(8000/31));
+            histo_1d->Fill((PosY.at(i)-500)/(8000/32));
         }
     }
     else if(dimension == ('Z' | 'z')){
         for(int i=0; i<PosZ.size(); i++){
-            histo_1d->Fill((PosZ.at(i)/100));
+            histo_1d->Fill((PosZ.at(i)/1000));
         }
     }
     return histo_1d;
@@ -446,7 +548,7 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
  * */
 
  TH2D* map2D (std::vector<double> PosX, std::vector<double> PosY, int dim){
-    TH2D* map2D = new TH2D("2D_Map", "2D_Map", dim, 0, 3.1, dim, 0, 3.1);
+    TH2D* map2D = new TH2D("2D_Map", "2D_Map", dim, 0, 3.2, dim, 0, 3.2);
     map2D->SetTitle(";X (cm);Y (cm)");
     map2D->GetXaxis()->SetLabelFont(22);
     map2D->GetXaxis()->SetTitleFont(22);
@@ -456,7 +558,7 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
 
     //loop on data
     for(int i =0; i< PosX.size(); i++){
-        map2D->Fill((PosX.at(i)-500)/(8000/3.1), (PosY.at(i)-500)/(8000/3.1));
+        map2D->Fill((PosX.at(i)-500)/(8000/3.2), (PosY.at(i)-500)/(8000/3.2));
     }
     return map2D;
 }
@@ -469,7 +571,7 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
   * */
 
   TH3F* map3D (std::vector<double> PosX, std::vector<double> PosY, std::vector<double> PosZ, int dim){
-     TH3F* map3D = new TH3F("3D_Map", "3D_Map", dim, 0, 3.1, dim, 0, 3.1, 18, 0, 5);
+     TH3F* map3D = new TH3F("3D_Map", "3D_Map", dim, 0, 3.2, dim, 0, 3.2, 18, 0, 2);
      map3D->SetTitle(";X (cm);Y (cm);Z (cm)");
      map3D->GetXaxis()->SetLabelFont(22);
      map3D->GetXaxis()->SetTitleFont(22);
@@ -480,7 +582,7 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
 
      //loop on data
      for(int i =0; i< PosX.size(); i++){
-         map3D->Fill((PosX.at(i)-500)/(8000/3.1), (PosY.at(i)-500)/(8000/3.1), PosZ.at(i)/(2000/2));
+         map3D->Fill((PosX.at(i)-500)/(8000/3.2), (PosY.at(i)-500)/(8000/3.2), PosZ.at(i)/(20000/2));
      }
      return map3D;
  }
