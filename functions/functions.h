@@ -101,60 +101,6 @@ struct sort_function
     }
 };
 
-/** sort_CRT
- * @brief: This function sort the g_die data of the TuilImg
- * @return: Sorted CRT
- * @note:
- * */
-int* sort_CRT(int array[4][4])
-{
-    for(int ir=0;ir<4;ir++)
-         {
-            for(int ic=0;ic<4;ic++)
-            {
-                for(int jr=0;jr<4;jr++)
-                {
-                        for(int jc=0;jc<4;jc++)
-                        {
-                    if(array[ir][jr]<array[ic][jc])
-                    {
-                        int temp=array[ir][jr];
-                        array[ir][jr]=array[ic][jc];
-                        array[ic][jc]=temp;
-                        }
-                    }
-                }
-            }
-        }
-    /*for(int y=0; y<4; y++){
-        for(int yy=0; yy<4; yy++){
-            std::cout<<array[y][yy]<<std::endl;
-        }
-    }*/
-    return reinterpret_cast<int *>(array);
-}
-
-/** Average calculation
- * @brief:  This function calculates the average value of the 3 first die from the sorted data created by sort_CRT.
- * @return: The int value of the average of the time of the three first hitted die per Tile.
- * @note:
- * */
-double average_CRT(int* sorted_data){
-    double CRT_corr=0;
-    int k=0;
-    for(int i=0; i<4; i++){
-        for(int ii=0; ii<4; ii++){
-            if((*((int*)sorted_data + (i * 4) + ii) != -1) && (k<3)){ //here the die not hitted (with -1 value are skipped)
-                CRT_corr += *((int*)sorted_data + (i * 4) + ii);
-                k++;
-            }
-        }
-    }
-    // Computation of the average
-    CRT_corr /= 3;
-    return CRT_corr;
-}
-
 /** CRT_calculation
  * @brief: This function uses the data contained in the TuileImage.g_die to compute the mean CRT of the 3 first die. First the hit time of each die is sorted and then the 3 first time are use to calculate the average
  * @return: The int value of the average of the time of the three first hitted die per Tile.
@@ -172,10 +118,8 @@ double CRT_calculation (int frame, std::vector<TuileImg> TileImg) {
         }
     }
     //Sorting the data in ascending order
-    //std::sort((unsigned int*)&entry_die[0][0], (unsigned int *)&entry_die[1][2]);
-    time_die = sort_CRT(entry_die);
-    //Computation of the average of the 3 first die time
-    avr_CRT = average_CRT(time_die);
+    std::sort((unsigned int*)&entry_die[0][0], (unsigned int *)&entry_die[3][3]+1);
+    avr_CRT=(entry_die[0][0]+entry_die[0][1]+entry_die[0][2])/3;
 
     return avr_CRT;
 }
@@ -253,7 +197,7 @@ std::array<std::vector<double>,11> Global_analysis (std::vector<TuileEvt> TileA,
                     }
                     if (((TileA.at(it_TileA+1).htimestamp) > (TileA.at(it_TileA).htimestamp)) && (it_TileA+1 <= TileA.size())){
                         //CRT_corrA = CRT_calculation(it_TileA, TileImgA);
-                        record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256*/);
+                        record_data[0].push_back((double)CRT_true*5/256 + (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256);
                         record_data[1].push_back(energy_TileA);
                         record_data[2].push_back(energy_TileB);
                         record_data[3].push_back(temper_TileA);
@@ -512,7 +456,7 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
     }
     else if(dimension == ('Z' | 'z')){
         dimX = 20;
-        nbins = 8;
+        nbins = 32;
     }
 
     TH1F* histo_1d = new TH1F("profile_1D","profile_1D", nbins, 0, dimX);
