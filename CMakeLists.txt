@@ -39,6 +39,8 @@ ${ROOT_INCLUDE_DIRS})
 
 add_definitions(-DNO_YAML ${ROOT_CXX_FLAGS})
 
-add_executable(Test main.cpp)
+add_executable(Calibration main_calibration.cpp)
+add_executable(Analysis main.cpp)
 
-target_link_libraries(Test FileReader ${ROOT_LIBRARIES})
+target_link_libraries(Calibration FileReader ${ROOT_LIBRARIES})
+target_link_libraries(Analysis FileReader ${ROOT_LIBRARIES})

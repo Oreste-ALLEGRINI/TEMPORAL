@@ -197,7 +197,7 @@ std::array<std::vector<double>,11> Global_analysis (std::vector<TuileEvt> TileA,
                     }
                     if (((TileA.at(it_TileA+1).htimestamp) > (TileA.at(it_TileA).htimestamp)) && (it_TileA+1 <= TileA.size())){
                         //CRT_corrA = CRT_calculation(it_TileA, TileImgA);
-                        record_data[0].push_back((double)CRT_true*5/256 + (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256);
+                        record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256*/);
                         record_data[1].push_back(energy_TileA);
                         record_data[2].push_back(energy_TileB);
                         record_data[3].push_back(temper_TileA);

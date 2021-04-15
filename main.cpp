@@ -136,118 +136,50 @@ int main(int argc,char ** argv)
     TH1F* TA_TB = new TH1F("","",83886080,-41943040,41943040);
 
     /** Coincidence Time Resolution */
-    TH1F* CRT_Tile1_Tile4 = new TH1F("CRT_Diamond_CeBr1","CRT_Diamond_CeBr1", 200, 100, 120);
-    CRT_Tile1_Tile4->SetTitle(";Time difference (ns);Counts");
-    CRT_Tile1_Tile4->GetXaxis()->SetLabelFont(22);
-    CRT_Tile1_Tile4->GetXaxis()->SetTitleFont(22);
-    CRT_Tile1_Tile4->GetYaxis()->SetLabelFont(22);
-    CRT_Tile1_Tile4->GetYaxis()->SetTitleFont(22);
-    CRT_Tile1_Tile4->SetLineWidth(2);
-    TH1F* CRT_Tile1_Tile2 = new TH1F("CRT_Diamond_CeBr2","CRT_Diamond_CeBr2", 200, 100, 120);
-    CRT_Tile1_Tile2->SetTitle(";Time difference (ns);Counts");
-    CRT_Tile1_Tile2->GetXaxis()->SetLabelFont(22);
-    CRT_Tile1_Tile2->GetXaxis()->SetTitleFont(22);
-    CRT_Tile1_Tile2->GetYaxis()->SetLabelFont(22);
-    CRT_Tile1_Tile2->GetYaxis()->SetTitleFont(22);
-    CRT_Tile1_Tile2->SetLineWidth(2);
-    TH1F* CRT_Tile2_Tile4 = new TH1F("CRT_CeBr2_CeBr1","CRT_CeBr2_CeBr1", 200, -10, 10);
-    CRT_Tile2_Tile4->SetTitle(";Time difference (ns);Counts");
-    CRT_Tile2_Tile4->GetXaxis()->SetLabelFont(22);
-    CRT_Tile2_Tile4->GetXaxis()->SetTitleFont(22);
-    CRT_Tile2_Tile4->GetYaxis()->SetLabelFont(22);
-    CRT_Tile2_Tile4->GetYaxis()->SetTitleFont(22);
-    CRT_Tile2_Tile4->SetLineWidth(2);
+
+    gStyle->SetLabelFont(22,"X");
+    gStyle->SetTitleFont(22,"X");
+    gStyle->SetLabelFont(22,"Y");
+    gStyle->SetTitleFont(22,"Y");
+    gStyle->SetHistLineWidth(2);
+    int mean_CRT_T1_T2;
+    int mean_CRT_T1_T4;
+    int mean_CRT_T2_T4;
+    TH1F* CRT_Tile1_Tile4;
+    TH1F* CRT_Tile1_Tile2;
+    TH1F* CRT_Tile2_Tile4;
 
     /** Photons spectrum */
     TH1F* Photons_Spectrum_Tile1 = new TH1F("Photons_Spectrum_Tile1","Photons_Spectrum_Tile1", 1000, 0, 20000);
     Photons_Spectrum_Tile1->SetTitle(";Energy (a.u);Counts");
-    Photons_Spectrum_Tile1->GetXaxis()->SetLabelFont(22);
-    Photons_Spectrum_Tile1->GetXaxis()->SetTitleFont(22);
-    Photons_Spectrum_Tile1->GetYaxis()->SetLabelFont(22);
-    Photons_Spectrum_Tile1->GetYaxis()->SetTitleFont(22);
-    Photons_Spectrum_Tile1->SetLineWidth(2);
     TH1F* Photons_Spectrum_Tile2 = new TH1F("Photons_Spectrum_Tile2","Photons_Spectrum_Tile2", 1000, 0, 20000);
     Photons_Spectrum_Tile2->SetTitle(";Energy (a.u);Counts");
-    Photons_Spectrum_Tile2->GetXaxis()->SetLabelFont(22);
-    Photons_Spectrum_Tile2->GetXaxis()->SetTitleFont(22);
-    Photons_Spectrum_Tile2->GetYaxis()->SetLabelFont(22);
-    Photons_Spectrum_Tile2->GetYaxis()->SetTitleFont(22);
-    Photons_Spectrum_Tile2->SetLineWidth(2);
     TH1F* Photons_Spectrum_Tile4 = new TH1F("Photons_Spectrum_Tile4","Photons_Spectrum_Tile4", 1000, 0, 20000);
     Photons_Spectrum_Tile4->SetTitle(";Energy (a.u);Counts");
-    Photons_Spectrum_Tile4->GetXaxis()->SetLabelFont(22);
-    Photons_Spectrum_Tile4->GetXaxis()->SetTitleFont(22);
-    Photons_Spectrum_Tile4->GetYaxis()->SetLabelFont(22);
-    Photons_Spectrum_Tile4->GetYaxis()->SetTitleFont(22);
-    Photons_Spectrum_Tile4->SetLineWidth(2);
     Photons_Spectrum_Tile4->SetLineColor(kRed);
     TSpectrum *spectrum = new TSpectrum();
 
     TH1F* Coinc_Photons_Spectrum_Tile12 = new TH1F("Coinc_Photons_Spectrum_Tile1","Coinc_Photons_Spectrum_Tile1", 1000, 0, 20000);
     Coinc_Photons_Spectrum_Tile12->SetTitle(";Energy (a.u);Counts");
-    Coinc_Photons_Spectrum_Tile12->GetXaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile12->GetXaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile12->GetYaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile12->GetYaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile12->SetLineWidth(2);
     TH1F* Coinc_Photons_Spectrum_Tile14 = new TH1F("Coinc_Photons_Spectrum_Tile1","Coinc_Photons_Spectrum_Tile1", 1000, 0, 20000);
     Coinc_Photons_Spectrum_Tile14->SetTitle(";Energy (a.u);Counts");
-    Coinc_Photons_Spectrum_Tile14->GetXaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile14->GetXaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile14->GetYaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile14->GetYaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile14->SetLineWidth(2);
     TH1F* Coinc_Photons_Spectrum_Tile21 = new TH1F("Coinc_Photons_Spectrum_Tile2","Coinc_Photons_Spectrum_Tile2", 1000, 0, 20000);
     Coinc_Photons_Spectrum_Tile21->SetTitle(";Energy (a.u);Counts");
-    Coinc_Photons_Spectrum_Tile21->GetXaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile21->GetXaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile21->GetYaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile21->GetYaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile21->SetLineWidth(2);
     TH1F* Coinc_Photons_Spectrum_Tile24 = new TH1F("Coinc_Photons_Spectrum_Tile2","Coinc_Photons_Spectrum_Tile2", 1000, 0, 20000);
     Coinc_Photons_Spectrum_Tile24->SetTitle(";Energy (a.u);Counts");
-    Coinc_Photons_Spectrum_Tile24->GetXaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile24->GetXaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile24->GetYaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile24->GetYaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile24->SetLineWidth(2);
     TH1F* Coinc_Photons_Spectrum_Tile41 = new TH1F("Coinc_Photons_Spectrum_Tile4","Coinc_Photons_Spectrum_Tile4", 1000, 0, 20000);
     Coinc_Photons_Spectrum_Tile41->SetTitle(";Energy (a.u);Counts");
-    Coinc_Photons_Spectrum_Tile41->GetXaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile41->GetXaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile41->GetYaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile41->GetYaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile41->SetLineWidth(2);
     TH1F* Coinc_Photons_Spectrum_Tile42 = new TH1F("Coinc_Photons_Spectrum_Tile4","Coinc_Photons_Spectrum_Tile4", 1000, 0, 20000);
     Coinc_Photons_Spectrum_Tile42->SetTitle(";Energy (a.u);Counts");
-    Coinc_Photons_Spectrum_Tile42->GetXaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile42->GetXaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile42->GetYaxis()->SetLabelFont(22);
-    Coinc_Photons_Spectrum_Tile42->GetYaxis()->SetTitleFont(22);
-    Coinc_Photons_Spectrum_Tile42->SetLineWidth(2);
 
     TH1F* X = new TH1F("X","X", 1000, 0, 10000);
     X->SetTitle(";Energy (a.u);Counts");
-    X->GetXaxis()->SetLabelFont(22);
-    X->GetXaxis()->SetTitleFont(22);
-    X->GetYaxis()->SetLabelFont(22);
-    X->GetYaxis()->SetTitleFont(22);
-    X->SetLineWidth(2);
 
     TH1F* Y = new TH1F("X","X", 1000, 0, 10000);
     Y->SetTitle(";Energy (a.u);Counts");
-    Y->GetXaxis()->SetLabelFont(22);
-    Y->GetXaxis()->SetTitleFont(22);
-    Y->GetYaxis()->SetLabelFont(22);
-    Y->GetYaxis()->SetTitleFont(22);
-    Y->SetLineWidth(2);
+
     TH1F* Z = new TH1F("X","X", 1000, 0, 10000);
     Z->SetTitle(";Energy (a.u);Counts");
-    Z->GetXaxis()->SetLabelFont(22);
-    Z->GetXaxis()->SetTitleFont(22);
-    Z->GetYaxis()->SetLabelFont(22);
-    Z->GetYaxis()->SetTitleFont(22);
-    Z->SetLineWidth(2);
 
     TH2D* PhotonSpectrumT2vsT4 = new TH2D("", "", 1200, 0, 12000, 1200, 0, 12000);
 
@@ -306,7 +238,7 @@ int main(int argc,char ** argv)
     std::cout << "Recovering data of each tiles ..." <<std::endl;
     while(reader.getNextEvent(&readTile) == FileReader::OK){
 
-        if(readTile.tuile.tuile==1){
+        if(readTile.tuile.tuile==1 || readTile.tuile.tuile==3){
             Tile1.push_back(readTile.tuile);
             Tile1_Img.push_back(readTile.image);
         }
@@ -316,7 +248,7 @@ int main(int argc,char ** argv)
             Tile2_Img.push_back(readTile.image);
         }
 
-        else if(readTile.tuile.tuile==4 || readTile.tuile.tuile==3){
+        else if(readTile.tuile.tuile==4){
             Tile4.push_back(readTile.tuile);
             Tile4_Img.push_back(readTile.image);
         }
@@ -400,11 +332,11 @@ int main(int argc,char ** argv)
         ESpectrum_Canvas->Update();
         gSystem->ProcessEvents();
 
-        std::cout<<"Choose the position of the energy filter window for Tile 1. Press -1 if you don't want apply filter or if the Tile1 is the dead Tile"<<std::endl;
+        std::cout<<"Choose the position of the energy filter window for Tile 1 or 3. Press -1 if you don't want apply filter or if the Tile1 is the dead Tile"<<std::endl;
         std::cin>>energy_peak_Tile1;
         std::cout<<"For Tile 2 ?"<<std::endl;
         std::cin>>energy_peak_Tile2;
-        std::cout<<"For Tile 3 or 4 ?"<<std::endl;
+        std::cout<<"For Tile 4 ?"<<std::endl;
         std::cin>>energy_peak_Tile4;
 
         std::cout<<energy_peak_Tile1<<" "<<energy_peak_Tile2<<" "<<energy_peak_Tile4<<std::endl;
@@ -463,16 +395,19 @@ int main(int argc,char ** argv)
     std::sort(Tile4.begin(), Tile4.end(), sort_function());
 
     //////////////////////ONLY USED TO CHECK THE RAW DATA AND RAW 2D MAP ///////////////////
-    /*std::cout<< "Generating raw data CRT between T2 and T4 ..."<<std::endl;
-    record_CRTA_B = Global_analysis (Tile2, Tile4);
+    std::cout<< "Generating raw data CRT between T2 and T4 ..."<<std::endl;
+    record_CRTA_B = Global_analysis (Tile1, Tile2, Tile1_Img, Tile2_Img);
      //Tile 1 - 2 ----> If you want to see the raw data, you just have to write the histogram in the rootfile
     for(int i=0; i<record_CRTA_B[0].size(); i++){
         TA_TB->Fill(record_CRTA_B[0].at(i));
     }
+    /*for(int i=0; i<record_CRTA_B[0].size(); i++){
+        std::cout<<record_CRTA_B[0].at(i)<<std::endl;
+    }*/
     if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
     mapTAcoincTA_TB = map2D (record_CRTA_B[5], record_CRTA_B[7], DimXY);
     mapTBcoincTA_TB = map2D (record_CRTA_B[6], record_CRTA_B[8], DimXY);
-    }*/
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -574,6 +509,28 @@ int main(int argc,char ** argv)
 
     std::cout << "Creation of graphs and histograms ..." <<std::endl;
 
+    if(record_CRT1_2[0].size()>0 && record_CRT1_4[0].size()>0 && record_CRT2_4[0].size()>0){
+        mean_CRT_T1_T2 = std::accumulate(std::begin(record_CRT1_2[0]), std::end(record_CRT1_2[0]),0)/record_CRT1_2[0].size();
+        mean_CRT_T1_T4 = std::accumulate(std::begin(record_CRT1_4[0]), std::end(record_CRT1_4[0]),0)/record_CRT1_4[0].size();
+        mean_CRT_T2_T4 = std::accumulate(std::begin(record_CRT2_4[0]), std::end(record_CRT2_4[0]),0)/record_CRT2_4[0].size();
+    }
+
+    else{
+        std::cout<<record_CRT1_2[0].size()<<" "<<record_CRT1_4[0].size()<<" "<<record_CRT2_4[0].size()<<std::endl;
+        mean_CRT_T1_T2 = 0;
+        mean_CRT_T1_T4 = 0;
+        mean_CRT_T2_T4 = 0;
+    }
+
+    std::cout<<mean_CRT_T1_T2<<" "<<mean_CRT_T1_T4<<" "<<mean_CRT_T2_T4<<std::endl;
+
+    CRT_Tile1_Tile2= new TH1F("","", 200, mean_CRT_T1_T2-10, mean_CRT_T1_T2+10);
+    CRT_Tile1_Tile2->SetTitle(";Time difference (ns);Counts");
+    CRT_Tile1_Tile4= new TH1F("","", 200, mean_CRT_T1_T4-10, mean_CRT_T1_T4+10);
+    CRT_Tile1_Tile4->SetTitle(";Time difference (ns);Counts");
+    CRT_Tile2_Tile4= new TH1F("","", 200, mean_CRT_T2_T4-10, mean_CRT_T2_T4+10);
+    CRT_Tile2_Tile4->SetTitle(";Time difference (ns);Counts");
+
     if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
     PhotonSpectrumT2vsT4 = E_TileA_vs_E_TileB (record_CRT2_4[1], record_CRT2_4[2]);
     }
@@ -636,7 +593,7 @@ int main(int argc,char ** argv)
     CRT_Tile1_Tile4->Write("CRT_Diamond_CeBr1");
     CRT_Tile1_Tile2->Write("CRT_Diamond_CeBr2");
     CRT_Tile2_Tile4->Write("CRT_CeBr2_CeBr1");
-    //TA_TB->Write("Test");
+    TA_TB->Write("Test");
     //mapTAcoincTA_TB->Write("Raw_Floodmap_T2");
     //mapTBcoincTA_TB->Write("Raw_Floodmap_T4");
     ESpectrum_Canvas->Write("EnergySpectrum");
