@@ -396,17 +396,19 @@ int main(int argc,char ** argv)
 
     //////////////////////ONLY USED TO CHECK THE RAW DATA AND RAW 2D MAP ///////////////////
     std::cout<< "Generating raw data CRT between T2 and T4 ..."<<std::endl;
-    record_CRTA_B = Global_analysis (Tile1, Tile2, Tile1_Img, Tile2_Img);
-     //Tile 1 - 2 ----> If you want to see the raw data, you just have to write the histogram in the rootfile
-    for(int i=0; i<record_CRTA_B[0].size(); i++){
-        TA_TB->Fill(record_CRTA_B[0].at(i));
-    }
-    /*for(int i=0; i<record_CRTA_B[0].size(); i++){
-        std::cout<<record_CRTA_B[0].at(i)<<std::endl;
-    }*/
-    if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
-    mapTAcoincTA_TB = map2D (record_CRTA_B[5], record_CRTA_B[7], DimXY);
-    mapTBcoincTA_TB = map2D (record_CRTA_B[6], record_CRTA_B[8], DimXY);
+    if(Tile1.size() != 0 && Tile2.size() !=0){
+        record_CRTA_B = Global_analysis (Tile1, Tile2, Tile1_Img, Tile2_Img);
+         //Tile 1 - 2 ----> If you want to see the raw data, you just have to write the histogram in the rootfile
+        for(int i=0; i<record_CRTA_B[0].size(); i++){
+            TA_TB->Fill(record_CRTA_B[0].at(i));
+        }
+        /*for(int i=0; i<record_CRTA_B[0].size(); i++){
+            std::cout<<record_CRTA_B[0].at(i)<<std::endl;
+        }*/
+        if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
+            mapTAcoincTA_TB = map2D (record_CRTA_B[5], record_CRTA_B[7], DimXY);
+            mapTBcoincTA_TB = map2D (record_CRTA_B[6], record_CRTA_B[8], DimXY);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -509,16 +511,23 @@ int main(int argc,char ** argv)
 
     std::cout << "Creation of graphs and histograms ..." <<std::endl;
 
-    if(record_CRT1_2[0].size()>0 && record_CRT1_4[0].size()>0 && record_CRT2_4[0].size()>0){
+    if(record_CRT1_2[0].size()>0){
         mean_CRT_T1_T2 = std::accumulate(std::begin(record_CRT1_2[0]), std::end(record_CRT1_2[0]),0)/record_CRT1_2[0].size();
+    }
+    else{
+        mean_CRT_T1_T2 = 0;
+    }
+    if(record_CRT1_4[0].size()>0){
         mean_CRT_T1_T4 = std::accumulate(std::begin(record_CRT1_4[0]), std::end(record_CRT1_4[0]),0)/record_CRT1_4[0].size();
-        mean_CRT_T2_T4 = std::accumulate(std::begin(record_CRT2_4[0]), std::end(record_CRT2_4[0]),0)/record_CRT2_4[0].size();
+    }
+    else{
+        mean_CRT_T1_T4 = 0;
     }
 
+    if(record_CRT2_4[0].size()>0){
+        mean_CRT_T2_T4 = std::accumulate(std::begin(record_CRT2_4[0]), std::end(record_CRT2_4[0]),0)/record_CRT2_4[0].size();
+    }
     else{
-        std::cout<<record_CRT1_2[0].size()<<" "<<record_CRT1_4[0].size()<<" "<<record_CRT2_4[0].size()<<std::endl;
-        mean_CRT_T1_T2 = 0;
-        mean_CRT_T1_T4 = 0;
         mean_CRT_T2_T4 = 0;
     }
 

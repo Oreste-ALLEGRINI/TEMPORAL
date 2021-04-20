@@ -338,6 +338,19 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
                     record_data[10].push_back(input_data[10].at(i));
                 }
             }
+            else if((energy_peak_TileB == -1) && (energy_peak_TileA == -1)){
+                record_data[0].push_back(input_data[0].at(i));
+                record_data[1].push_back(input_data[1].at(i));
+                record_data[2].push_back(input_data[2].at(i));
+                record_data[3].push_back(input_data[3].at(i));
+                record_data[4].push_back(input_data[4].at(i));
+                record_data[5].push_back(input_data[5].at(i));
+                record_data[6].push_back(input_data[6].at(i));
+                record_data[7].push_back(input_data[7].at(i));
+                record_data[8].push_back(input_data[8].at(i));
+                record_data[9].push_back(input_data[9].at(i));
+                record_data[10].push_back(input_data[10].at(i));
+            }
         }
         ////////////////// temperature filtering only ///////////////////
         else if(nrg_filtering == false && tmp_filtering == true){
