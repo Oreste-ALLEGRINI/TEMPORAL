@@ -57,6 +57,18 @@
 #include "TH3.h"
 
 
+/** Find_Median function
+ * @brief: split the full path of filename and extension to add  the output repository in the path
+ * @return: the full path of the output analysis file (without extension)
+ * @note:
+ * */
+double FindMedian (std::vector<double> v)
+{
+  int median;
+  std::sort(v.begin(),v.end());
+  median = v.at(v.size()/2);
+}
+
 /** SplitFilename function
  * @brief: split the full path of filename and extension to add  the output repository in the path
  * @return: the full path of the output analysis file (without extension)
@@ -123,6 +135,133 @@ double CRT_calculation (int frame, std::vector<TuileImg> TileImg) {
 
     return avr_CRT;
 }
+
+/** Global analysis function
+ * @brief: This function recovers the events which have a corresponding frame number (time coincidence)
+ * @return: array of vectors containing: [0] CRT values [1]Energy data of Tile A [2] Energy data of Tile B [3] Temperature TileA [4] Temperature TileB [5] X position Tile A [6] Y position Tile A [7] Z position TileA [8][9][10] positions for tile B
+ * @note: Future improvements: Additionnal recording of the x,y,z positions after the different filtering options
+ * */
+
+std::array<std::vector<double>,11> Global_analysis_bis (std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB){
+    int counter = 0, it_TileA = 0, it_TileB = 0, it_TileB_eq = 0, CRT_true = 0, CRT = -1, energy_TileA =0, energy_TileB = 0, frameB = 0, temper_TileA = 0, temper_TileB = 0, posX_TileA = 0, posX_TileB = 0, posY_TileA = 0, posY_TileB = 0, posZ_TileA = 0, posZ_TileB = 0;
+    bool real_value = false;
+    float progress=0.0;
+    double CRT_corrA= 0, CRT_corrB = 0;
+    std::array<std::vector<double>,11> record_data;
+    while(progress < 1.0) {
+        int barWidth = 70;
+        while(((TileA.at(it_TileA).htimestamp) < (TileB.at(it_TileB).htimestamp))){
+            it_TileA++;
+        }
+        while(((TileB.at(it_TileB).htimestamp) <= (TileA.at(it_TileA).htimestamp)) && ((it_TileA < (TileA.size()-1)) && (it_TileB < (TileB.size()-1)))){
+            if ((TileB.at(it_TileB).htimestamp) == (TileA.at(it_TileA).htimestamp)){
+                it_TileB_eq = it_TileB;
+                while((TileB.at(it_TileB_eq).htimestamp)==(TileB.at(it_TileB).htimestamp)){
+                    if(CRT==-1 && real_value == false){
+                        CRT = std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(it_TileB_eq).ltimestamp&0x00FFFFFF)));
+                        CRT_true = (TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(it_TileB_eq).ltimestamp&0x00FFFFFF);
+                        energy_TileA = TileA.at(it_TileA).photons;
+                        energy_TileB = TileB.at(it_TileB_eq).photons;
+                        temper_TileA = TileA.at(it_TileA).temper;
+                        temper_TileB = TileB.at(it_TileB_eq).temper;
+                        posX_TileA = TileA.at(it_TileA).mX;
+                        posX_TileB = TileB.at(it_TileB_eq).mX;
+                        posY_TileA = TileA.at(it_TileA).mY;
+                        posY_TileB = TileB.at(it_TileB_eq).mY;
+                        posZ_TileA = TileA.at(it_TileA).mZ;
+                        posZ_TileB = TileB.at(it_TileB_eq).mZ;
+                        real_value = true;
+                    }
+                    else if(real_value == true){
+                        if(std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(it_TileB_eq).ltimestamp&0x00FFFFFF))) <= CRT){
+                            CRT = std::abs((int)((TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(it_TileB_eq).ltimestamp&0x00FFFFFF)));
+                            CRT_true = (TileA.at(it_TileA).ltimestamp&0x00FFFFFF) - (TileB.at(it_TileB_eq).ltimestamp&0x00FFFFFF);
+                            energy_TileA = TileA.at(it_TileA).photons;
+                            energy_TileB = TileB.at(it_TileB_eq).photons;
+                            temper_TileA = TileA.at(it_TileA).temper;
+                            temper_TileB = TileB.at(it_TileB_eq).temper;
+                            posX_TileA = TileA.at(it_TileA).mX;
+                            posX_TileB = TileB.at(it_TileB_eq).mX;
+                            posY_TileA = TileA.at(it_TileA).mY;
+                            posY_TileB = TileB.at(it_TileB_eq).mY;
+                            posZ_TileA = TileA.at(it_TileA).mZ;
+                            posZ_TileB = TileB.at(it_TileB_eq).mZ;
+                            counter++;
+                            frameB = it_TileB_eq;
+                        }
+                    }
+                    if((TileB.at(it_TileB_eq+1).htimestamp) > (TileB.at(it_TileB_eq).htimestamp) && (counter > 1) && (TileB.at(it_TileB_eq).htimestamp) != (TileB.at(frameB).htimestamp)){
+                        record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256*/);
+                        record_data[1].push_back(energy_TileA);
+                        record_data[2].push_back(energy_TileB);
+                        record_data[3].push_back(temper_TileA);
+                        record_data[4].push_back(temper_TileB);
+                        record_data[5].push_back(posX_TileA);
+                        record_data[6].push_back(posX_TileB);
+                        record_data[7].push_back(posY_TileA);
+                        record_data[8].push_back(posY_TileB);
+                        record_data[9].push_back(posZ_TileA);
+                        record_data[10].push_back(posZ_TileB);
+                        CRT = -1;
+                        CRT_true = 0;
+                        energy_TileA = 0;
+                        energy_TileB = 0;
+                        temper_TileA = 0;
+                        temper_TileB = 0;
+                        posX_TileA = 0; posY_TileA = 0; posZ_TileA =0;
+                        posX_TileB = 0; posY_TileB = 0; posZ_TileB =0;
+                        real_value = false;
+                        counter = 0;
+                    }
+                    else if ((TileB.at(it_TileB_eq+1).htimestamp) > (TileB.at(it_TileB_eq).htimestamp)){
+                        record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256*/);
+                        record_data[1].push_back(energy_TileA);
+                        record_data[2].push_back(energy_TileB);
+                        record_data[3].push_back(temper_TileA);
+                        record_data[4].push_back(temper_TileB);
+                        record_data[5].push_back(posX_TileA);
+                        record_data[6].push_back(posX_TileB);
+                        record_data[7].push_back(posY_TileA);
+                        record_data[8].push_back(posY_TileB);
+                        record_data[9].push_back(posZ_TileA);
+                        record_data[10].push_back(posZ_TileB);
+                        CRT = -1;
+                        CRT_true = 0;
+                        energy_TileA = 0;
+                        energy_TileB = 0;
+                        temper_TileA = 0;
+                        temper_TileB = 0;
+                        posX_TileA = 0; posY_TileA = 0; posZ_TileA =0;
+                        posX_TileB = 0; posY_TileB = 0; posZ_TileB =0;
+                        real_value = false;
+
+                    }
+                    it_TileB_eq++;
+                }
+                std::cout << "[";
+                    int pos = barWidth * progress;
+                    for (int i = 0; i < barWidth; ++i) {
+                        if (i < pos) std::cout << "=";
+                        else if (i == pos) std::cout << ">";
+                        else std::cout << " ";
+                    }
+                std::cout << "] " << int(progress * 100.0) << " %\r";
+                    std::cout.flush();
+                //CRT_calculation(it_TileA, TileImgA);
+                //CRT_calculation(frameB, TileImgB);
+                    progress = (float)it_TileA/TileA.size();
+            }
+            it_TileB++;
+            while ((TileB.at(it_TileB).htimestamp) > (TileA.at(it_TileA).htimestamp) && ((it_TileA < (TileA.size()-1)) && (it_TileB < (TileB.size()-1)))){
+                it_TileA++;
+            }
+        }
+        progress = 1;
+    }
+    std::cout << std::endl;
+    return record_data;
+}
+
 
 
 /** Global analysis function
@@ -252,7 +391,7 @@ std::array<std::vector<double>,11> CRT_filter (std::vector<TuileEvt> TileA, std:
     std::array<std::vector<double>,11> Clear_data;
     double CRT_peak;
     TH1F* Hist_Raw_data = new TH1F("","",83886080,-41943040,41943040);
-    Raw_data = Global_analysis(TileA, TileB, TileImgA, TileImgB);
+    Raw_data = Global_analysis_bis(TileA, TileB, TileImgA, TileImgB);
 
     //Seek for the CRT peak
     for(int i=0; i<Raw_data[0].size(); i++){
@@ -293,7 +432,7 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
         ///////////////// energy filtering only ///////////////////
         if(nrg_filtering == true && tmp_filtering == false){
             if((energy_peak_TileA != -1) && (energy_peak_TileB != -1)){
-                //if((input_data[1].at(i) >= 1.1*energy_peak_TileA) && (input_data[2].at(i) >= 1.1*energy_peak_TileB)){ //==> Filter to study the Compton events of 1275 keV gammas from 22Na source
+                //if((input_data[1].at(i) + input_data[2].at(i) >= 0.9*(energy_peak_TileA+energy_peak_TileB)/2) && (input_data[1].at(i) + input_data[2].at(i) >= 1.2*(energy_peak_TileA+energy_peak_TileB)/2)){ //==> Filter to study the Compton events of 1275 keV gammas from 22Na source
                 if((input_data[1].at(i) >= energy_peak_TileA*0.9) && (input_data[1].at(i) <= energy_peak_TileA*1.1) && (input_data[2].at(i) >= energy_peak_TileB*0.9) && (input_data[2].at(i) <= energy_peak_TileB*1.1)){
                     record_data[0].push_back(input_data[0].at(i));
                     record_data[1].push_back(input_data[1].at(i));
@@ -636,3 +775,4 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
      hLineSep();
    return result;
  }
+

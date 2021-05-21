@@ -33,6 +33,7 @@
 #include <vector>
 #include <array>
 #include <algorithm> //class used for the max_element function
+#include <functional>
 
 //ROOT LIBRARIES
 #include "TLatex.h"
@@ -394,10 +395,19 @@ int main(int argc,char ** argv)
     std::sort(Tile2.begin(), Tile2.end(), sort_function());
     std::sort(Tile4.begin(), Tile4.end(), sort_function());
 
+    int compteur =0;
+    for(int i=1; i<Tile2.size(); i++){
+        if(Tile2.at(i).htimestamp > Tile2.at(i-1).htimestamp){
+            compteur++;
+        }
+    }
+
+    std::cout<<"Nb d'evenement sans frame multiples sur T2 : "<<compteur<<std::endl;
+
     //////////////////////ONLY USED TO CHECK THE RAW DATA AND RAW 2D MAP ///////////////////
     std::cout<< "Generating raw data CRT between T2 and T4 ..."<<std::endl;
     if(Tile1.size() != 0 && Tile2.size() !=0){
-        record_CRTA_B = Global_analysis (Tile1, Tile2, Tile1_Img, Tile2_Img);
+        record_CRTA_B = Global_analysis_bis (Tile1, Tile2, Tile1_Img, Tile2_Img);
          //Tile 1 - 2 ----> If you want to see the raw data, you just have to write the histogram in the rootfile
         for(int i=0; i<record_CRTA_B[0].size(); i++){
             TA_TB->Fill(record_CRTA_B[0].at(i));
@@ -405,7 +415,7 @@ int main(int argc,char ** argv)
         /*for(int i=0; i<record_CRTA_B[0].size(); i++){
             std::cout<<record_CRTA_B[0].at(i)<<std::endl;
         }*/
-        if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
+        if((Tile1.empty()!=true) && (Tile2.empty()!=true)){
             mapTAcoincTA_TB = map2D (record_CRTA_B[5], record_CRTA_B[7], DimXY);
             mapTBcoincTA_TB = map2D (record_CRTA_B[6], record_CRTA_B[8], DimXY);
         }
@@ -417,16 +427,16 @@ int main(int argc,char ** argv)
 
     if((energy_filtering==false) && (temper_filtering==false)){
         /** Coincidence Tile 1 and Tile 4 */
-        if((Tile1.empty()!=true) && (Tile4.empty()!=true)){
-        record_CRT1_4 = CRT_filter (Tile1, Tile4, Tile1_Img, Tile4_Img);
-        }
-        else{std::cout<<"Tile 1 or 4 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
+        //if((Tile1.empty()!=true) && (Tile4.empty()!=true)){
+        //record_CRT1_4 = CRT_filter (Tile1, Tile4, Tile1_Img, Tile4_Img);
+        //}
+        //else{std::cout<<"Tile 1 or 4 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
 
         /** Coincidence Tile 1 and Tile 2 */
-        if((Tile1.empty()!=true) && (Tile2.empty()!=true)){
-        record_CRT1_2 = CRT_filter (Tile1, Tile2, Tile1_Img, Tile2_Img);
-        }
-        else{std::cout<<"Tile 1 or 2 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
+        //if((Tile1.empty()!=true) && (Tile2.empty()!=true)){
+        //record_CRT1_2 = CRT_filter (Tile1, Tile2, Tile1_Img, Tile2_Img);
+        //}
+        //else{std::cout<<"Tile 1 or 2 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
 
         /** Coincidence Tile 2 and Tile 4 */
         if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
@@ -525,7 +535,7 @@ int main(int argc,char ** argv)
     }
 
     if(record_CRT2_4[0].size()>0){
-        mean_CRT_T2_T4 = std::accumulate(std::begin(record_CRT2_4[0]), std::end(record_CRT2_4[0]),0)/record_CRT2_4[0].size();
+        mean_CRT_T2_T4 = (int)FindMedian(record_CRT2_4[0]);
     }
     else{
         mean_CRT_T2_T4 = 0;
@@ -533,11 +543,11 @@ int main(int argc,char ** argv)
 
     std::cout<<mean_CRT_T1_T2<<" "<<mean_CRT_T1_T4<<" "<<mean_CRT_T2_T4<<std::endl;
 
-    CRT_Tile1_Tile2= new TH1F("","", 200, mean_CRT_T1_T2-10, mean_CRT_T1_T2+10);
+    CRT_Tile1_Tile2= new TH1F("","", 400, mean_CRT_T1_T2-20, mean_CRT_T1_T2+20);
     CRT_Tile1_Tile2->SetTitle(";Time difference (ns);Counts");
-    CRT_Tile1_Tile4= new TH1F("","", 200, mean_CRT_T1_T4-10, mean_CRT_T1_T4+10);
+    CRT_Tile1_Tile4= new TH1F("","", 400, mean_CRT_T1_T4-20, mean_CRT_T1_T4+20);
     CRT_Tile1_Tile4->SetTitle(";Time difference (ns);Counts");
-    CRT_Tile2_Tile4= new TH1F("","", 200, mean_CRT_T2_T4-10, mean_CRT_T2_T4+10);
+    CRT_Tile2_Tile4= new TH1F("","", 400, mean_CRT_T2_T4-20, mean_CRT_T2_T4+20);
     CRT_Tile2_Tile4->SetTitle(";Time difference (ns);Counts");
 
     if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
