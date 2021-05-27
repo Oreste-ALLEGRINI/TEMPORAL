@@ -226,6 +226,8 @@ int main(int argc,char ** argv)
 
     ///////////////////////   Canvas and PAD definition    ////////////////////////
     TCanvas* ESpectrum_Canvas = new TCanvas("ESpectrum","ESpectrum", 1200, 1200);
+    TCanvas* DOI_Tile2;
+    TCanvas* DOI_Tile4;
     TCanvas* CRT_Canvas = new TCanvas("CRT_Canvas","CRT_Canvas", 1200, 1200);
     CRT_Canvas->Close();
 
@@ -405,9 +407,9 @@ int main(int argc,char ** argv)
     std::cout<<"Nb d'evenement sans frame multiples sur T2 : "<<compteur<<std::endl;
 
     //////////////////////ONLY USED TO CHECK THE RAW DATA AND RAW 2D MAP ///////////////////
-    std::cout<< "Generating raw data CRT between T2 and T4 ..."<<std::endl;
-    if(Tile1.size() != 0 && Tile2.size() !=0){
-        record_CRTA_B = Global_analysis_bis (Tile1, Tile2, Tile1_Img, Tile2_Img);
+    /*std::cout<< "Generating raw data CRT between T2 and T4 ..."<<std::endl;
+    if(Tile2.size() != 0 && Tile4.size() !=0){
+        record_CRTA_B = Global_analysis (Tile2, Tile4, Tile2_Img, Tile4_Img);
          //Tile 1 - 2 ----> If you want to see the raw data, you just have to write the histogram in the rootfile
         for(int i=0; i<record_CRTA_B[0].size(); i++){
             TA_TB->Fill(record_CRTA_B[0].at(i));
@@ -415,11 +417,11 @@ int main(int argc,char ** argv)
         /*for(int i=0; i<record_CRTA_B[0].size(); i++){
             std::cout<<record_CRTA_B[0].at(i)<<std::endl;
         }*/
-        if((Tile1.empty()!=true) && (Tile2.empty()!=true)){
+        /*if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
             mapTAcoincTA_TB = map2D (record_CRTA_B[5], record_CRTA_B[7], DimXY);
             mapTBcoincTA_TB = map2D (record_CRTA_B[6], record_CRTA_B[8], DimXY);
         }
-    }
+    }*/
 
     ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -427,20 +429,20 @@ int main(int argc,char ** argv)
 
     if((energy_filtering==false) && (temper_filtering==false)){
         /** Coincidence Tile 1 and Tile 4 */
-        //if((Tile1.empty()!=true) && (Tile4.empty()!=true)){
-        //record_CRT1_4 = CRT_filter (Tile1, Tile4, Tile1_Img, Tile4_Img);
-        //}
-        //else{std::cout<<"Tile 1 or 4 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
+        if((Tile1.empty()!=true) && (Tile4.empty()!=true)){
+            record_CRT1_4 = CRT_filter (Tile1, Tile4, Tile1_Img, Tile4_Img, 0);
+        }
+        else{std::cout<<"Tile 1 or 4 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
 
         /** Coincidence Tile 1 and Tile 2 */
-        //if((Tile1.empty()!=true) && (Tile2.empty()!=true)){
-        //record_CRT1_2 = CRT_filter (Tile1, Tile2, Tile1_Img, Tile2_Img);
-        //}
-        //else{std::cout<<"Tile 1 or 2 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
+        if((Tile1.empty()!=true) && (Tile2.empty()!=true)){
+            record_CRT1_2 = CRT_filter (Tile1, Tile2, Tile1_Img, Tile2_Img, 0);
+        }
+        else{std::cout<<"Tile 1 or 2 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
 
         /** Coincidence Tile 2 and Tile 4 */
         if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
-        record_CRT2_4 = CRT_filter (Tile2, Tile4, Tile2_Img, Tile4_Img);
+            record_CRT2_4 = CRT_filter (Tile2, Tile4, Tile2_Img, Tile4_Img, 1);
         }
         else{std::cout<<"Tile 2 or 4 has not collected data. The reasearch of coincidence is then impossible !\n"<<std::endl;}
 
@@ -450,17 +452,17 @@ int main(int argc,char ** argv)
     else{
         /** Coincidence Tile 1 and Tile 4 */
         if((Tile1.empty()!=true) && (Tile4.empty()!=true)){
-        record_CRT1_4 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile1, energy_peak_Tile4, temper_peak_Tile1, temper_peak_Tile4, Tile1, Tile4, Tile1_Img, Tile4_Img);
+        record_CRT1_4 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile1, energy_peak_Tile4, temper_peak_Tile1, temper_peak_Tile4, Tile1, Tile4, Tile1_Img, Tile4_Img, 0);
         }
 
         /** Coincidence Tile 1 and Tile 2 */
         if((Tile1.empty()!=true) && (Tile2.empty()!=true)){
-        record_CRT1_2 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile1, energy_peak_Tile2, temper_peak_Tile1, temper_peak_Tile2, Tile1, Tile2, Tile1_Img, Tile2_Img);
+        record_CRT1_2 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile1, energy_peak_Tile2, temper_peak_Tile1, temper_peak_Tile2, Tile1, Tile2, Tile1_Img, Tile2_Img, 0);
         }
 
         /** Coincidence Tile 2 and Tile 4 */
         if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
-        record_CRT2_4 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile2, energy_peak_Tile4, temper_peak_Tile2, temper_peak_Tile4, Tile2, Tile4, Tile2_Img, Tile4_Img);
+        record_CRT2_4 = Nrj_Temper_filter (energy_filtering, temper_filtering, energy_peak_Tile2, energy_peak_Tile4, temper_peak_Tile2, temper_peak_Tile4, Tile2, Tile4, Tile2_Img, Tile4_Img, 1);
         }
 
         /** Coincidence between Tile 2 and 4 with trigger signal provided by Tile 1 */
@@ -518,6 +520,10 @@ int main(int argc,char ** argv)
     if((Tile2.empty()!=true) && (Tile4.empty()!=true)){
     map3DT2coincT2_T4 = map3D (record_CRT2_4[5], record_CRT2_4[7], record_CRT2_4[9], DimXY);
     }
+
+    std::cout<< "Building the DOI Time distributions"<<std::endl;
+    //DOI_Tile2=DOI_TimeDistribution(Tile2, axis);
+    //DOI_Tile4=DOI_TimeDistribution(Tile4, axis);
 
     std::cout << "Creation of graphs and histograms ..." <<std::endl;
 
@@ -615,6 +621,8 @@ int main(int argc,char ** argv)
     TA_TB->Write("Test");
     //mapTAcoincTA_TB->Write("Raw_Floodmap_T2");
     //mapTBcoincTA_TB->Write("Raw_Floodmap_T4");
+    DOI_Tile2->Write("DOI_Tile2");
+    DOI_Tile4->Write("DOI_Tile4");
     ESpectrum_Canvas->Write("EnergySpectrum");
     PhotonSpectrumT2vsT4->Write("E_T2_vs_E_T4");
     Coinc_Photons_Spectrum_Tile21->Write("ESpectrumT2whenT1");

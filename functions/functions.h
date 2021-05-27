@@ -30,6 +30,7 @@
 #include <array>
 #include <algorithm> //class used for the max_element funtion
 
+
 //ROOT LIBRARIES
 #include "TLatex.h"
 #include "TROOT.h"
@@ -56,6 +57,12 @@
 #include "TMath.h"
 #include "TH3.h"
 
+struct TIME_PHOTON //object containing the time of a die and the sum of the photons of this die
+{
+    int time;
+    int photon;  // Does not participate in comparisons
+    bool operator() (TIME_PHOTON i,TIME_PHOTON j) { return (i.time<j.time); }
+}time_photon;
 
 /** Find_Median function
  * @brief: split the full path of filename and extension to add  the output repository in the path
@@ -119,19 +126,30 @@ struct sort_function
  * @note:
  * */
 double CRT_calculation (int frame, std::vector<TuileImg> TileImg) {
-    int entry_die[4][4];
-    int* time_die;
+    int entry_time[4][4];
+    int entry_photons[4][4];
     double avr_CRT;
+    int sum_die; // sum of the photons in the first three hitted dies
+    std::vector<TIME_PHOTON> time_die;
 
     //Recovering the dies data of the events frameA and frameB
-    for(int i=0; i<4; i++){
-        for(int ii=0; ii<4; ii++){
-            entry_die[i][ii] = TileImg.at(frame).g_die[i][ii];
+    for(int i=0; i<8; i+=2){
+        for(int ii=0; ii<8; ii+=2){
+            entry_time[i/2][ii/2] = TileImg.at(frame).g_die[i/2][ii/2];
+            entry_photons[i/2][ii/2] = TileImg.at(frame).g_pix[i][ii]+TileImg.at(frame).g_pix[i][ii+1]+TileImg.at(frame).g_pix[i+1][ii]+TileImg.at(frame).g_pix[i+1][ii+1]; //Computing the sum of photons contained in each die
+            time_die.push_back({entry_time[i/2][ii/2],entry_photons[i/2][ii/2]});
         }
     }
-    //Sorting the data in ascending order
-    std::sort((unsigned int*)&entry_die[0][0], (unsigned int *)&entry_die[3][3]+1);
-    avr_CRT=(entry_die[0][0]+entry_die[0][1]+entry_die[0][2])/3;
+
+    std::sort(time_die.begin(), time_die.end(),time_photon);
+    while(time_die.at(0).time == -1){
+        time_die.emplace_back(time_die.at(0));
+        time_die.erase(time_die.begin());
+    }
+    sum_die = time_die.at(0).photon + time_die.at(1).photon + time_die.at(2).photon;
+    //std::sort((unsigned int*)&entry_time[0][0], (unsigned int *)&entry_time[3][3]+1);
+    //avr_CRT=(entry_time[0][0]+entry_time[0][1]+entry_time[0][2])/3;
+    avr_CRT=(time_die.at(0).time*time_die.at(0).photon+time_die.at(1).time*time_die.at(1).photon+time_die.at(2).time*time_die.at(2).photon)/sum_die;
 
     return avr_CRT;
 }
@@ -142,7 +160,7 @@ double CRT_calculation (int frame, std::vector<TuileImg> TileImg) {
  * @note: Future improvements: Additionnal recording of the x,y,z positions after the different filtering options
  * */
 
-std::array<std::vector<double>,11> Global_analysis_bis (std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB){
+std::array<std::vector<double>,11> Global_analysis_bis (std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB, bool WeightedMeanTimeCorr){
     int counter = 0, it_TileA = 0, it_TileB = 0, it_TileB_eq = 0, CRT_true = 0, CRT = -1, energy_TileA =0, energy_TileB = 0, frameB = 0, temper_TileA = 0, temper_TileB = 0, posX_TileA = 0, posX_TileB = 0, posY_TileA = 0, posY_TileB = 0, posZ_TileA = 0, posZ_TileB = 0;
     bool real_value = false;
     float progress=0.0;
@@ -190,8 +208,14 @@ std::array<std::vector<double>,11> Global_analysis_bis (std::vector<TuileEvt> Ti
                             frameB = it_TileB_eq;
                         }
                     }
+                    ///////// MAYBE THIS PART CAN BE REMOVED. SHOULD BE TESTED WITH AN HIGH INTENSITY ACQUISITION WITH A LOT OF EVENTS PER FRAME AND AN IMPORTANT NOISE ////////
                     if((TileB.at(it_TileB_eq+1).htimestamp) > (TileB.at(it_TileB_eq).htimestamp) && (counter > 1) && (TileB.at(it_TileB_eq).htimestamp) != (TileB.at(frameB).htimestamp)){
-                        record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256*/);
+                        if(WeightedMeanTimeCorr==1){
+                            record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256*/);
+                        }
+                        else {
+                            record_data[0].push_back((double)CRT_true*5/256 /*+ CRT_calculation(frameB, TileImgB)*5/256*/);
+                        }
                         record_data[1].push_back(energy_TileA);
                         record_data[2].push_back(energy_TileB);
                         record_data[3].push_back(temper_TileA);
@@ -213,8 +237,14 @@ std::array<std::vector<double>,11> Global_analysis_bis (std::vector<TuileEvt> Ti
                         real_value = false;
                         counter = 0;
                     }
+                    //////////////////////////////////////////////////
                     else if ((TileB.at(it_TileB_eq+1).htimestamp) > (TileB.at(it_TileB_eq).htimestamp)){
-                        record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256*/);
+                        if(WeightedMeanTimeCorr==1){
+                            record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(it_TileB_eq, TileImgB))*5/256*/);
+                        }
+                        else {
+                            record_data[0].push_back((double)CRT_true*5/256 /*+ CRT_calculation(it_TileB_eq, TileImgB)*5/256*/);
+                        }
                         record_data[1].push_back(energy_TileA);
                         record_data[2].push_back(energy_TileB);
                         record_data[3].push_back(temper_TileA);
@@ -234,6 +264,7 @@ std::array<std::vector<double>,11> Global_analysis_bis (std::vector<TuileEvt> Ti
                         posX_TileA = 0; posY_TileA = 0; posZ_TileA =0;
                         posX_TileB = 0; posY_TileB = 0; posZ_TileB =0;
                         real_value = false;
+                        counter = 0;
 
                     }
                     it_TileB_eq++;
@@ -246,10 +277,11 @@ std::array<std::vector<double>,11> Global_analysis_bis (std::vector<TuileEvt> Ti
                         else std::cout << " ";
                     }
                 std::cout << "] " << int(progress * 100.0) << " %\r";
-                    std::cout.flush();
+                progress = (float)it_TileA/TileA.size();
+                std::cout.flush();
                 //CRT_calculation(it_TileA, TileImgA);
                 //CRT_calculation(frameB, TileImgB);
-                    progress = (float)it_TileA/TileA.size();
+
             }
             it_TileB++;
             while ((TileB.at(it_TileB).htimestamp) > (TileA.at(it_TileA).htimestamp) && ((it_TileA < (TileA.size()-1)) && (it_TileB < (TileB.size()-1)))){
@@ -257,6 +289,7 @@ std::array<std::vector<double>,11> Global_analysis_bis (std::vector<TuileEvt> Ti
             }
         }
         progress = 1;
+        std::cout.flush();
     }
     std::cout << std::endl;
     return record_data;
@@ -270,7 +303,7 @@ std::array<std::vector<double>,11> Global_analysis_bis (std::vector<TuileEvt> Ti
  * @note: Future improvements: Additionnal recording of the x,y,z positions after the different filtering options
  * */
 
-std::array<std::vector<double>,11> Global_analysis (std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB){
+std::array<std::vector<double>,11> Global_analysis (std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB, bool WeightedMeanTimeCorr){
     int it_TileA = 0, it_TileB = 0, CRT_true = 0, CRT = 0, energy_TileA =0, energy_TileB = 0, frameB = 0, temper_TileA = 0, temper_TileB = 0, posX_TileA = 0, posX_TileB = 0, posY_TileA = 0, posY_TileB = 0, posZ_TileA = 0, posZ_TileB = 0;
     bool real_value = false;
     float progress=0.0;
@@ -336,7 +369,12 @@ std::array<std::vector<double>,11> Global_analysis (std::vector<TuileEvt> TileA,
                     }
                     if (((TileA.at(it_TileA+1).htimestamp) > (TileA.at(it_TileA).htimestamp)) && (it_TileA+1 <= TileA.size())){
                         //CRT_corrA = CRT_calculation(it_TileA, TileImgA);
-                        record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256*/);
+                        if(WeightedMeanTimeCorr==1){
+                            record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA) - CRT_calculation(frameB, TileImgB))*5/256*/);
+                        }
+                        else{
+                            record_data[0].push_back((double)CRT_true*5/256 /*+ (CRT_calculation(it_TileA, TileImgA)*5/256*/);
+                        }
                         record_data[1].push_back(energy_TileA);
                         record_data[2].push_back(energy_TileB);
                         record_data[3].push_back(temper_TileA);
@@ -376,6 +414,7 @@ std::array<std::vector<double>,11> Global_analysis (std::vector<TuileEvt> TileA,
             }
         }
         progress = 1;
+        std::cout.flush();
     }
     std::cout << std::endl;
     return record_data;
@@ -386,12 +425,12 @@ std::array<std::vector<double>,11> Global_analysis (std::vector<TuileEvt> TileA,
  * @return: array of vectors containing ([0] CRT [1] Energy TileA [2] Energy TileB) of physical events under the peak.
  * @note: The function Global_analysis is called to provide the data having a frame coincidence in the two tiles which are compared
  **/
-std::array<std::vector<double>,11> CRT_filter (std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB){
+std::array<std::vector<double>,11> CRT_filter (std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB, bool WeightedMeanTimeCorr){
     std::array<std::vector<double>,11> Raw_data;
     std::array<std::vector<double>,11> Clear_data;
     double CRT_peak;
     TH1F* Hist_Raw_data = new TH1F("","",83886080,-41943040,41943040);
-    Raw_data = Global_analysis_bis(TileA, TileB, TileImgA, TileImgB);
+    Raw_data = Global_analysis_bis(TileA, TileB, TileImgA, TileImgB, WeightedMeanTimeCorr);
 
     //Seek for the CRT peak
     for(int i=0; i<Raw_data[0].size(); i++){
@@ -424,10 +463,10 @@ std::array<std::vector<double>,11> CRT_filter (std::vector<TuileEvt> TileA, std:
  * @return: array of vectors containing ([0] CRT [1] Energy TileA [2] Energy TileB) of physical events under the peak.
  * @note: The function CRT_filter is called to provide the input data
  **/
-std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tmp_filtering, int energy_peak_TileA, int energy_peak_TileB, int temper_peak_TileA, int temper_peak_TileB, std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB){
+std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tmp_filtering, int energy_peak_TileA, int energy_peak_TileB, int temper_peak_TileA, int temper_peak_TileB, std::vector<TuileEvt> TileA, std::vector<TuileEvt> TileB, std::vector<TuileImg> TileImgA, std::vector<TuileImg> TileImgB, bool WeightedMeanTimeCorr){
     std::array<std::vector<double>,11> input_data;
     std::array<std::vector<double>,11> record_data;
-    input_data = CRT_filter(TileA, TileB, TileImgA, TileImgB);
+    input_data = CRT_filter(TileA, TileB, TileImgA, TileImgB, WeightedMeanTimeCorr);
     for(int i=0; i<input_data[0].size(); i++){
         ///////////////// energy filtering only ///////////////////
         if(nrg_filtering == true && tmp_filtering == false){
@@ -774,5 +813,121 @@ std::array<std::vector<double>,11> Nrj_Temper_filter(bool nrg_filtering, bool tm
      hLinePos();
      hLineSep();
    return result;
+ }
+
+ /** DOI Time_distribution function
+  * @brief: Reconstruction of the 1D time distribution of the proton hit in the Tile segmented into 5 mm slices
+  * @return: TCanvas containing 4 or 6 TH1F corresponding to the depth ranges 0/5 5/10 10/15 15/20 (20/25 25/30) mm
+  * @note: Mainly used for the DOI correction development.
+  * @note: This function uses the raw ltimestamp data of the Tile.
+  * */
+
+  TCanvas* DOI_TimeDistribution (std::vector<TuileEvt> Tile, char dimension){
+     TCanvas* time_z = new TCanvas("","",1600,1600);
+     TH1F* time_0_5mm = new TH1F("0/5mm","0/5mm", 2000, -100, +100);
+     time_0_5mm->SetTitle(";Time (ns);Counts");
+     time_0_5mm->GetXaxis()->SetLabelFont(22);
+     time_0_5mm->GetXaxis()->SetTitleFont(22);
+     time_0_5mm->GetYaxis()->SetLabelFont(22);
+     time_0_5mm->GetYaxis()->SetTitleFont(22);
+     time_0_5mm->SetLineWidth(2);
+     TH1F* time_5_10mm = new TH1F("5/10mm","5/10mm", 2000, -100, +100);
+     time_5_10mm->SetTitle(";Time (ns);Counts");
+     time_5_10mm->GetXaxis()->SetLabelFont(22);
+     time_5_10mm->GetXaxis()->SetTitleFont(22);
+     time_5_10mm->GetYaxis()->SetLabelFont(22);
+     time_5_10mm->GetYaxis()->SetTitleFont(22);
+     time_5_10mm->SetLineWidth(2);
+     TH1F* time_10_15mm = new TH1F("10/15mm","10/15mm", 2000, -100, +100);
+     time_10_15mm->SetTitle(";Time (ns);Counts");
+     time_10_15mm->GetXaxis()->SetLabelFont(22);
+     time_10_15mm->GetXaxis()->SetTitleFont(22);
+     time_10_15mm->GetYaxis()->SetLabelFont(22);
+     time_10_15mm->GetYaxis()->SetTitleFont(22);
+     time_10_15mm->SetLineWidth(2);
+     TH1F* time_15_20mm = new TH1F("15/20mm","15/20mm", 2000, -100, +100);
+     time_15_20mm->SetTitle(";Time (ns);Counts");
+     time_15_20mm->GetXaxis()->SetLabelFont(22);
+     time_15_20mm->GetXaxis()->SetTitleFont(22);
+     time_15_20mm->GetYaxis()->SetLabelFont(22);
+     time_15_20mm->GetYaxis()->SetTitleFont(22);
+     time_15_20mm->SetLineWidth(2);
+     TH1F* time_20_25mm = new TH1F("20/25mm","20/25mm", 2000, -100, +100);
+     time_20_25mm->SetTitle(";Time (ns);Counts");
+     time_20_25mm->GetXaxis()->SetLabelFont(22);
+     time_20_25mm->GetXaxis()->SetTitleFont(22);
+     time_20_25mm->GetYaxis()->SetLabelFont(22);
+     time_20_25mm->GetYaxis()->SetTitleFont(22);
+     time_20_25mm->SetLineWidth(2);
+     TH1F* time_25_30mm = new TH1F("25/30mm","25/30mm", 2000, -100, +100);
+     time_25_30mm->SetTitle(";Time (ns);Counts");
+     time_25_30mm->GetXaxis()->SetLabelFont(22);
+     time_25_30mm->GetXaxis()->SetTitleFont(22);
+     time_25_30mm->GetYaxis()->SetLabelFont(22);
+     time_25_30mm->GetYaxis()->SetTitleFont(22);
+     time_25_30mm->SetLineWidth(2);
+     std::cout<<"Z : "<<Tile.at(15).mZ/2000;
+     std::cout<<"X : "<<Tile.at(15).mX/8000;
+     if(dimension == ('Z' | 'z')){
+         for( int i=0; i<Tile.size(); i++){
+             if (Tile.at(i).mZ/2000 <= 5){
+                 time_0_5mm->Fill(Tile.at(i).ltimestamp&0x00FFFFFF);
+             }
+             else if ((Tile.at(i).mZ/2000 > 5) && (Tile.at(i).mZ/2000 <= 10)){
+                 time_5_10mm->Fill(Tile.at(i).ltimestamp&0x00FFFFFF);
+             }
+             else if ((Tile.at(i).mZ/2000 > 10) && (Tile.at(i).mZ/2000 <= 15)){
+                 time_10_15mm->Fill(Tile.at(i).ltimestamp&0x00FFFFFF);
+             }
+             else if (Tile.at(i).mZ/2000 > 15){
+                 time_15_20mm->Fill(Tile.at(i).ltimestamp&0x00FFFFFF);
+             }
+         }
+         time_z->Divide(2,2);
+         time_z->cd(1);
+         time_0_5mm->Draw();
+         time_z->cd(2);
+         time_5_10mm->Draw();
+         time_z->cd(3);
+         time_10_15mm->Draw();
+         time_z->cd(4);
+         time_15_20mm->Draw();
+     }
+     else if (dimension == ('X' | 'x')){
+         for( int i=0; i<Tile.size(); i++){
+             if (Tile.at(i).mX/8000 <= 5){
+                 time_0_5mm->Fill(Tile.at(i).ltimestamp&0x00FFFFFF);
+             }
+             else if ((Tile.at(i).mX/8000 > 5) && (Tile.at(i).mX/8000 <= 10)){
+                 time_5_10mm->Fill(Tile.at(i).ltimestamp&0x00FFFFFF);
+             }
+             else if ((Tile.at(i).mX/8000 > 10) && (Tile.at(i).mX/8000 <= 15)){
+                 time_10_15mm->Fill(Tile.at(i).ltimestamp&0x00FFFFFF);
+             }
+             else if (Tile.at(i).mX/8000 > 15 && (Tile.at(i).mX/8000 <= 20)){
+                 time_15_20mm->Fill(Tile.at(i).ltimestamp&0x00FFFFFF);
+             }
+             else if (Tile.at(i).mX/8000 > 20 && (Tile.at(i).mX/8000 <= 25)){
+                 time_20_25mm->Fill(Tile.at(i).ltimestamp&0x00FFFFFF);
+             }
+             else if (Tile.at(i).mX/8000 > 25 && (Tile.at(i).mX/8000 <= 30)){
+                 time_25_30mm->Fill(Tile.at(i).ltimestamp&0x00FFFFFF);
+             }
+         }
+         time_z->Divide(2,3);
+         time_z->cd(1);
+         time_0_5mm->Draw();
+         time_z->cd(2);
+         time_5_10mm->Draw();
+         time_z->cd(3);
+         time_10_15mm->Draw();
+         time_z->cd(4);
+         time_15_20mm->Draw();
+         time_z->cd(5);
+         time_20_25mm->Draw();
+         time_z->cd(6);
+         time_25_30mm->Draw();
+     }
+     return time_z;
  }
 
